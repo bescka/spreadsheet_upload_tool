@@ -16,7 +16,7 @@ models.Base.metadata.create_all(bind=engine)
 router = APIRouter(
     prefix='/users',
     tags=['user'],
-    dependencies=[Depends(get_current_active_user)]
+    # dependencies=[Depends(get_current_active_user)]
 )
 
 # TODO: change endpoint?
