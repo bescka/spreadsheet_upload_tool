@@ -33,16 +33,33 @@ Initial format for KH upload:
 Schedule:
 
 for 21/03/2024:
-- __[Rudolf] Authentication and FastAPI end point setup__
+- ~~__[Rudolf] Authentication and FastAPI end point setup__~~
 
 for 28/03/2024:
-- [Ben] Provide sample csv file
-- [Ben] Front end outline with login page and upload buttons
-- [Rudi] CRUD for user DB 
-- [Rudi] Split into multiple files
+- ~~[Ben] Provide sample csv file~~
+- ~~[Ben] Front end outline with login page and buttons~~
+- ~~[Rudi] CRUD for user DB~~ 
+- ~~[Rudi] Split into multiple files~~
 
-21/03/2024:
+04/04/2024:
 - Review and tie the two together (aws review/ lambda function etc. S3?)
+  - [Rudi] Permissions, cleanup (auth)
+  - [Rudi] Admin user
+  - [Rudi] Tests (using sample data)
+  - [Ben] implement middleware stuff/ connection
+  - [Ben] frontend testing framework? 
+  - [Ben] think about https? 
+
+- Session: 
+  - review git actions
+
+## Steps TODO 
+- Staging/ Prod env?
+  - proddb
+- Hosting (AWS) - lambda or separate host? 
+- CSS/ Frontend
+- Containerization? Docker? Kubernetes? 
+
 
 ## Questions
 JWT uses only username why?
