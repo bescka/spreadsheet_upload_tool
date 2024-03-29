@@ -33,12 +33,17 @@ Initial format for KH upload:
 Schedule:
 
 for 21/03/2024:
-- [Rudolf] Authentication and FastAPI end point setup
+- __[Rudolf] Authentication and FastAPI end point setup__
+
+for 28/03/2024:
+- [Ben] Provide sample csv file
 - [Ben] Front end outline with login page and upload buttons
+- [Rudi] CRUD for user DB 
+- [Rudi] Split into multiple files
 
 21/03/2024:
 - Review and tie the two together (aws review/ lambda function etc. S3?)
 
-
-
+## Questions
+JWT uses only username why?
 
