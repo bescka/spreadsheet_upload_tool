@@ -162,3 +162,10 @@ cython_debug/
 #.idea/
 
 app.py
+<<<<<<< HEAD
+sql_app.db
+example_spread.xlsx
+.gitignore
+frontend-app
+=======
+>>>>>>> main
