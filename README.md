@@ -43,15 +43,29 @@ for 28/03/2024:
 
 04/04/2024:
 - Review and tie the two together (aws review/ lambda function etc. S3?)
+
+  - ~~[Rudi] Tests (using sample data)~~
+  - ~~[Ben] implement middleware stuff/ connection~~
+  
+11/04/2024: 
+- Focus: Front and backend processes for file upload
+  - [Rudi] Do all the tests. ALL the tests.
   - [Rudi] Permissions, cleanup (auth)
   - [Rudi] Admin user
-  - [Rudi] Tests (using sample data)
-  - ~~[Ben] implement middleware stuff/ connection~~
+  
+  - [Ben] Uploader page
+  - [Rudolf] To give lecture on Airflow and CI/ github actions
+  
+  
+
+Other
   - [Ben] frontend testing framework? 
-  - [Ben] think about https? 
+  - [Ben] https? 
+
 
 - Session: 
   - review git actions
+    - when you push they run tests? 
 
 ## Steps TODO 
 - Staging/ Prod env?
@@ -59,10 +73,12 @@ for 28/03/2024:
 - Hosting (AWS) - lambda or separate host? 
 - CSS/ Frontend
 - Containerization? Docker? Kubernetes? 
+- Continuous integration? 
 
 ## Process Qu
 - Best practice for commits/ git management
-
+- How does rebasing work? 
+- Where do you put tokens securely? local storage might be accessible from javascripts. 
 
 ## Questions
 JWT uses only username why?
