@@ -46,7 +46,7 @@ for 28/03/2024:
   - [Rudi] Permissions, cleanup (auth)
   - [Rudi] Admin user
   - [Rudi] Tests (using sample data)
-  - [Ben] implement middleware stuff/ connection
+  - ~~[Ben] implement middleware stuff/ connection~~
   - [Ben] frontend testing framework? 
   - [Ben] think about https? 
 
@@ -59,6 +59,9 @@ for 28/03/2024:
 - Hosting (AWS) - lambda or separate host? 
 - CSS/ Frontend
 - Containerization? Docker? Kubernetes? 
+
+## Process Qu
+- Best practice for commits/ git management
 
 
 ## Questions

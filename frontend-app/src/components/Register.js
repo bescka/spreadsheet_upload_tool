@@ -2,7 +2,7 @@ import React, { useState } from 'react';
  import axios from 'axios';
  import { useNavigate } from 'react-router-dom';
 function Register() {
- const [username, setUsername] = useState('');
+//  const [username, setUsername] = useState('');
  const [email, setEmail] = useState('');
  const [password, setPassword] = useState('');
  const [message, setMessage] = useState('');
@@ -10,15 +10,15 @@ function Register() {
 const handleRegister = () => {
  // Send registration request to the backend
  axios
- .post('http://localhost:8000/register', { username, email, password })
+ .post('http://localhost:8000/users/', { email, password })
  .then(response => {
- setMessage(response.data.message);
- const { username, email, token } = response.data;
- localStorage.setItem('username', username);
+ //setMessage(response.data.message);
+ const { email } = response.data;
+ //localStorage.setItem('username', username);
  localStorage.setItem('email', email);
- localStorage.setItem('token', token);
-// Redirect to homepage using navigate
- navigate('/'); // Replace '/' with the homepage URL if needed
+//localStorage.setItem('token', token);
+// Redirect to login using navigate
+ navigate('/login'); // Replace '/' with the homepage URL if needed
  })
  .catch(error => {
  console.error(error);
@@ -29,12 +29,12 @@ return (
  <div>
  <h2>Register</h2>
  <div>
- <input
+ {/* <input
  type="text"
  placeholder="Username"
- value={username}
+ value={email}
  onChange={e => setUsername(e.target.value)}
- />
+ /> */}
  <input
  type="email"
  placeholder="Email"

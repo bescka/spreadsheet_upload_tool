@@ -79,7 +79,7 @@ router = APIRouter()
 
 @router.get('/')
 async def api_health_check():
-    return {'Status': 'Live'}
+    return {'Status': 'Something Different'}
 
 @router.post('/token')
 async def login_for_access_token(
@@ -96,7 +96,7 @@ async def login_for_access_token(
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(data={'sub': user.email},
                                        expires_delta=access_token_expires)
-    return Token(access_token=access_token, token_type='bearer')
+    return Token(access_token=access_token, token_type='bearer', message='Welcome!')
 
 @router.get("/users/me/", response_model=User)
 async def read_users_me(

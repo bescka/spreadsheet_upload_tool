@@ -5,6 +5,8 @@ __pycache__/
 
 node_modules/
 
+bnotes/
+
 # C extensions
 *.so
 

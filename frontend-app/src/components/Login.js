@@ -7,25 +7,35 @@ function Login() {
  const [password, setPassword] = useState('');
  const [message, setMessage] = useState('');
  const navigate = useNavigate();
+
 const handleLogin = () => {
- // Send login request to the backend
- axios
- .post('http://localhost:8000/login', { email, password })
- .then(response => {
- setMessage(response.data.message);
- const { username, email, token } = response.data;
- localStorage.setItem('username', username);
- localStorage.setItem('email', email);
- localStorage.setItem('token', token);
-// Redirect to homepage using navigate
- navigate('/'); // Replace '/' with the homepage URL if needed
- })
- .catch(error =>
-{
- console.error(error);
- setMessage('Error logging in. Please try again.');
- });
- };
+    // Send login request to the backend
+    axios({
+        method: 'post',
+        url: 'http://localhost:8000/token',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        data: `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
+    })
+    .then(response => {
+        // console.log(response.data);
+        // console.log(response);
+        // console.log(response.data.message);
+        // setMessage(response.data.message);
+        const { token } = response.data;
+        // localStorage.setItem('username', username);
+        localStorage.setItem('email', email);
+        localStorage.setItem('token', token);
+        // Redirect to homepage using navigate
+        navigate('/'); // Replace '/' with the homepage URL if needed
+    })
+    .catch(error => {
+        console.error(error);
+        setMessage('Error logging in. Please try again.');
+    });
+};
+
 return (
  <div>
  <h2>Login</h2>
@@ -49,3 +59,4 @@ return (
  );
  }
 export default Login;
+
