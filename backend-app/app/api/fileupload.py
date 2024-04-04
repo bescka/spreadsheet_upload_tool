@@ -17,7 +17,7 @@ async def create_upload_file(file: UploadFile, current_user: Annotated[User,  De
     try:
         if file.filename.split('.')[-1] == 'xlsx': # WARNING: create check_file_type functin?
             df = pd.read_excel(file.file)
-            df = pd.melt(df, id_vars=['name', 'email', 'id'], var_name='date', value_name='value')
+            # df = pd.melt(df, id_vars=['name', 'email', 'id'], var_name='date', value_name='value')
             return JSONResponse(df.head().to_json())
         else:
             raise HTTPException(status_code=422, detail='File needs to have .xlsx format.')
