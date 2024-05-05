@@ -137,13 +137,33 @@ def test_create_user_exists(test_db, test_user_exists):
 
     with pytest.raises(IntegrityError):
         crud.create_user(test_db, test_user_exists)
+    test_db.rollback()
 
-# def test_update_is_admin(test_db, test_user):
-#     user = test_db.query(db_user).filter(db_user.email==test_user.email).first()
-#     # updated_user = crud.update_is_admin(test_db, test_user)
-#     #
-#     # retrieved_user = test_db.query(db_user).filter_by(id=2).first()
-#
-#     assert user.is_admin == True
-#     # assert updated_user.is_admin == True
-#     # assert retrieved_user.isadmin == True
+def test_update_is_admin_ok(test_db):
+
+    retrieved_user = test_db.query(db_user).filter(db_user.id == 2).first()
+
+    assert retrieved_user.is_admin == False 
+
+    updated_user = crud.update_is_admin(test_db, retrieved_user)
+    retrieved_user = test_db.query(db_user).filter(db_user.id==2).first()
+    
+    assert updated_user.id == retrieved_user.id
+    assert updated_user.is_admin == retrieved_user.is_admin
+    assert updated_user.is_admin == True
+    assert retrieved_user.is_admin == True
+
+
+def test_update_is_admin_already(test_db):
+
+    retrieved_user = test_db.query(db_user).filter(db_user.id == 2).first()
+
+    assert retrieved_user.is_admin == False 
+
+    updated_user = crud.update_is_admin(test_db, retrieved_user)
+    retrieved_user = test_db.query(db_user).filter(db_user.id==2).first()
+    
+    assert updated_user.id == retrieved_user.id
+    assert updated_user.is_admin == retrieved_user.is_admin
+    assert updated_user.is_admin == True
+    assert retrieved_user.is_admin == True

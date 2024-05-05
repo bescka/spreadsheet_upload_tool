@@ -66,13 +66,12 @@ async def get_current_active_user(
         return current_user
     raise HTTPException(status_code=400, detail='Inactive user')
 
-# TODO: get_current_active_admin
 async def get_current_active_admin(
     current_user: Annotated[User, Depends(get_current_user)]
 ):
     if ( current_user.is_active==True)&( current_user.is_admin == True ):
         return current_user
-    raise HTTPException(status_code=400, detail='Inactive user')
+    raise HTTPException(status_code=400, detail='Not Authorized!')
 
 router = APIRouter()
 
@@ -98,8 +97,3 @@ async def login_for_access_token(
                                        expires_delta=access_token_expires)
     return Token(access_token=access_token, token_type='bearer', message='Welcome!')
 
-@router.get("/users/me/", response_model=User)
-async def read_users_me(
-    current_user: Annotated[User, Depends(get_current_active_user)]
-):
-    return current_user

@@ -50,8 +50,8 @@ for 28/03/2024:
 11/04/2024: 
 - Focus: Front and backend processes for file upload
   - [Rudi] Do all the tests. ALL the tests.
-  - [Rudi] Permissions, cleanup (auth)
-  - [Rudi] Admin user
+  - ~~[Rudi] Permissions, cleanup (auth)~~
+  - ~~[Rudi] Admin user~~
   
   - [Ben] Uploader page
   - [Rudolf] To give lecture on Airflow and CI/ github actions
