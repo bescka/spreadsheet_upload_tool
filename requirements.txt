@@ -2,6 +2,7 @@ annotated-types==0.6.0
 anyio==4.3.0
 bcrypt==4.1.2
 click==8.1.7
+coverage==7.5.4
 ecdsa==0.18.0
 et-xmlfile==1.1.0
 fastapi==0.110.0
@@ -19,6 +20,7 @@ pyasn1==0.5.1
 pydantic==2.6.4
 pydantic_core==2.16.3
 pytest==8.1.1
+pytest-cov==5.0.0
 python-dateutil==2.9.0.post0
 python-jose==3.3.0
 python-multipart==0.0.9
