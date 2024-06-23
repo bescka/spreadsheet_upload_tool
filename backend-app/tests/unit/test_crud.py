@@ -12,13 +12,13 @@ from app.models.user import UserCreate, User
 @pytest.fixture(scope="session")
 def test_db():
     # Create an in-memory SQLite database
-    engine = create_engine("sqlite:///:memory:")
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
 
     # Create tables in the database
     Base.metadata.create_all(engine)
 
     # Create a sessionmaker bound to the engine
-    Session = sessionmaker(bind=engine)
+    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     session = Session()
 
@@ -52,7 +52,7 @@ def test_db():
 
     session.commit()
     # Return a session to the test database
-    yield Session()
+    yield session
 
 
 @pytest.fixture(scope="function")
@@ -63,6 +63,20 @@ def test_user():
 @pytest.fixture(scope="function")
 def test_user_exists():
     return UserCreate(email="user1@example.com", password="testpassword")
+
+
+# Test get_db
+def test_get_db(test_db):
+    session = test_db
+
+    gen = crud.get_db()
+    db = next(gen)
+
+    try:
+        assert type(db).__name__ == type(session).__name__
+
+    finally:
+        gen.close()
 
 
 # Test get_user
@@ -200,3 +214,14 @@ def test_update_is_admin_already(test_db):
     assert updated_user.is_admin == retrieved_user.is_admin
     assert updated_user.is_admin == True
     assert retrieved_user.is_admin == True
+
+
+def test_update_is_acitve(test_db):
+    retrieved_user = test_db.query(db_user).filter(db_user.id == 1).first()
+
+    assert retrieved_user.is_active == True
+
+    updated_user = crud.update_is_active(test_db, retrieved_user, False)
+
+    assert updated_user.id == retrieved_user.id
+    assert updated_user.is_active == False
