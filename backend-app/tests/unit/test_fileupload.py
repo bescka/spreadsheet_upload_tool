@@ -11,10 +11,10 @@ def test_create_upload_file_authenticated(client):
     assert '{"1":{"0":4,"1":7},"2":{"0":5,"1":8},"3":{"0":6,"1":9}}' in response.json()
 
 
-def test_create_upload_file_unauthenticated(bad_client):
+def test_create_upload_file_unauthenticated(unauth_client):
     # Test without patching, so the request is unauthenticated
     files = {"file": ("test.csv", "1,2,3\n4,5,6\n7,8,9\n")}
-    response = bad_client.post("/fileupload/", files=files)
+    response = unauth_client.post("/fileupload/", files=files)
     assert response.status_code == 401  # Assuming 401 Unauthorized for unauthenticated requests
 
 
