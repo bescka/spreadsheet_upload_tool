@@ -3,57 +3,38 @@ import pytest
 from app.sql_db.database import Base
 from app.models.user import UserCreate
 from app.models.database import User as db_user
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 
 from app.main import app
 from app.api.auth import get_current_active_user
+from app.sql_db.crud import create_user, get_db
+from app.models import user as api_m
 
 
 @pytest.fixture(scope="session")
-def test_db():
+def db_engine():
+
     # Create an in-memory SQLite database
     engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
 
     # Create tables in the database
     Base.metadata.create_all(engine)
+    yield engine
 
-    # Create a sessionmaker bound to the engine
-    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-    session = Session()
+@pytest.fixture(scope="function")
+def db(db_engine):
+    connection = db_engine.connect()
 
-    session.add(
-        db_user(
-            id=1,
-            email="user1@example.com",
-            hashed_password="testfake_hash",
-            is_active=True,
-            is_admin=True,
-        )
-    )
-    session.add(
-        db_user(
-            id=2,
-            email="user2@example.com",
-            hashed_password="test2fake_hash",
-            is_active=True,
-            is_admin=False,
-        )
-    )
-    session.add(
-        db_user(
-            id=3,
-            email="user3@example.com",
-            hashed_password="test3fake_hash",
-            is_active=False,
-            is_admin=False,
-        )
-    )
+    transaction = connection.begin()
 
-    session.commit()
-    # Return a session to the test database
-    yield session
+    db = Session(autocommit=False, autoflush=False, bind=connection)
+
+    yield db
+
+    db.rollback()
+    connection.close()
 
 
 @pytest.fixture(scope="function")
@@ -63,11 +44,11 @@ def test_user():
 
 @pytest.fixture(scope="function")
 def test_user_exists():
-    return UserCreate(email="user1@example.com", password="testpassword")
+    return UserCreate(email="user1@example.com", password="test1")
 
 
 @pytest.fixture(scope="function")
-def client(test_db):
+def client(db):
     app.dependency_overrides[get_current_active_user] = lambda: db_user(
         id=1,
         email="user1@example.com",
@@ -80,8 +61,19 @@ def client(test_db):
     app.dependency_overrides = {}
 
 
+nt = TestClient(app)
+
+
 @pytest.fixture(scope="function")
-def bad_client(test_db):
+def unauth_client(db):
+
+    app.dependency_overrides[get_db] = lambda: db  # Assuming you have a get_db dependency
     with TestClient(app) as test_client:
         yield test_client
-    app.dependency_overrides = {}
+
+
+@pytest.fixture
+def users(db):
+    create_user(db, api_m.UserCreate(email="user1@example.com", password="test1"))
+    create_user(db, api_m.UserCreate(email="user2@example.com", password="test2"))
+    create_user(db, api_m.UserCreate(email="user3@example.com", password="test3"))
