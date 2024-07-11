@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
 
 from app.main import app
-from app.api.auth import get_current_active_user
-from app.sql_db.crud import create_user, get_db
+from app.api.auth import get_current_active_user, get_user_by_email
+from app.sql_db.crud import create_user, get_db, update_is_admin
 from app.models import user as api_m
 
 
@@ -52,16 +52,13 @@ def client(db):
     app.dependency_overrides[get_current_active_user] = lambda: db_user(
         id=1,
         email="user1@example.com",
-        hashed_password="testfake_hash",
+        hashed_password="test1fake_hash",
         is_active=True,
         is_admin=True,
     )
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides = {}
-
-
-nt = TestClient(app)
 
 
 @pytest.fixture(scope="function")
@@ -75,5 +72,8 @@ def unauth_client(db):
 @pytest.fixture
 def users(db):
     create_user(db, api_m.UserCreate(email="user1@example.com", password="test1"))
+    # HACK: Change in future
+    user = get_user_by_email(db, email="user1@example.com")
+    update_is_admin(db, user)
     create_user(db, api_m.UserCreate(email="user2@example.com", password="test2"))
     create_user(db, api_m.UserCreate(email="user3@example.com", password="test3"))
