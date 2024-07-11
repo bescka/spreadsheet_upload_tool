@@ -32,12 +32,12 @@ def create_user(user: api_m.UserCreate, db: Session = Depends(get_db)):
 
 
 # User authentication
-@router.get("/users/me/", response_model=api_m.User)
+@router.get("/me/", response_model=api_m.User)
 async def read_users_me(current_user: Annotated[api_m.User, Depends(get_current_active_user)]):
     return current_user
 
 
-@router.put("/users/me/update_state/")
+@router.put("/me/update_state/")
 def update_user_state(
     new_state: bool,
     current_user: Annotated[api_m.User, Depends(get_current_active_user)],
@@ -55,6 +55,7 @@ def update_user_state(
 
 
 # Admin authentication
+# TODO: change route
 @router.get("/users/", response_model=list[api_m.User])
 def read_users(
     current_user: Annotated[api_m.User, Depends(get_current_active_admin)],
