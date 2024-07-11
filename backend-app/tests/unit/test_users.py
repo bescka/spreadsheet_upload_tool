@@ -44,15 +44,39 @@ def test_create_user_exists(unauth_client, users, test_user_exists, db):
 def test_read_users_me_ok(client, db, users):
     response = client.get("/users/me/")
     assert response.status_code == 200
+    # WARNING: possible bottle neck for future changes
     assert response.json() == {
         "id": 1,
         "email": "user1@example.com",
         "is_active": True,
-        "is_admin": True,
+        "is_admin": False,
     }
 
 
 def test_read_users_me_fault(unauth_client, db, users):
     response = unauth_client.get("/users/me/")
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+
+
+### Test update user state
+
+
+def test_update_user_state_new(client, db, users):
+    response = client.put("/users/me/update_state/", json={"new_state": False})
+    print("response")
+    print(response.json())
+    assert response.status_code == 200
+    assert response.json()["Message"] == "User status updated"
+
+
+def test_update_user_state_same(client, db, users):
+    response = client.put("/users/me/update_state/", json={"new_state": True})
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User is_active is set to True already!"
+
+
+def test_update_user_state_same(unauth_client, db, users):
+    response = unauth_client.put("/users/me/update_state/", json={"new_state": True})
     assert response.status_code == 401
     assert response.json()["detail"] == "Not authenticated"
