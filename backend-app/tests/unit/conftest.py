@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 
 from app.main import app
 from app.api.auth import get_current_active_user, get_user_by_email
-from app.sql_db.crud import create_user, get_db, update_is_admin
+from app.sql_db.crud import create_user, get_db, update_is_active, update_is_admin
 from app.models import user as api_m
 
 
@@ -27,6 +27,7 @@ def db_engine():
 def db(db_engine):
     connection = db_engine.connect()
 
+    # WARNING: transaction not accessed
     transaction = connection.begin()
 
     db = Session(autocommit=False, autoflush=False, bind=connection)
@@ -54,6 +55,20 @@ def client(db):
         email="user1@example.com",
         hashed_password="test1fake_hash",
         is_active=True,
+        is_admin=False,
+    )
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides = {}
+
+
+@pytest.fixture(scope="function")
+def client_admin(db):
+    app.dependency_overrides[get_current_active_user] = lambda: db_user(
+        id=2,
+        email="user2@example.com",
+        hashed_password="test2fake_hash",
+        is_active=True,
         is_admin=True,
     )
     with TestClient(app) as test_client:
@@ -64,7 +79,7 @@ def client(db):
 @pytest.fixture(scope="function")
 def unauth_client(db):
 
-    app.dependency_overrides[get_db] = lambda: db  # Assuming you have a get_db dependency
+    app.dependency_overrides[get_db] = lambda: db
     with TestClient(app) as test_client:
         yield test_client
 
@@ -72,8 +87,10 @@ def unauth_client(db):
 @pytest.fixture
 def users(db):
     create_user(db, api_m.UserCreate(email="user1@example.com", password="test1"))
-    # HACK: Change in future
-    user = get_user_by_email(db, email="user1@example.com")
-    update_is_admin(db, user)
     create_user(db, api_m.UserCreate(email="user2@example.com", password="test2"))
+    # HACK: Change in future
+    user2 = get_user_by_email(db, email="user2@example.com")
+    update_is_admin(db, user2)
     create_user(db, api_m.UserCreate(email="user3@example.com", password="test3"))
+    user3 = get_user_by_email(db, email="user3@example.com")
+    update_is_active(db, user3, new_state=False)
