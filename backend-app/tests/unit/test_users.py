@@ -1,17 +1,12 @@
 from fastapi.testclient import TestClient
 from app.api import users
 from app.sql_db import crud
-import pytest
 
 
 def test_create_user_first(unauth_client, test_user, db):
-    users = crud.get_users(db)
-    for user in users:
-        print(user.id, user.email)
     response = unauth_client.post(
         "/users/", json={"email": test_user.email, "password": test_user.password}
     )
-    users = crud.get_users(db)
 
     assert response.status_code == 200
     assert response.json()["email"] == test_user.email
@@ -24,13 +19,9 @@ def test_create_user_first(unauth_client, test_user, db):
 
 
 def test_create_user_additional(unauth_client, users, test_user, db):
-    users = crud.get_users(db)
-    for user in users:
-        print(user.id, user.email)
     response = unauth_client.post(
         "/users/", json={"email": test_user.email, "password": test_user.password}
     )
-    users = crud.get_users(db)
 
     assert response.status_code == 200
     assert response.json()["email"] == test_user.email
@@ -43,13 +34,49 @@ def test_create_user_additional(unauth_client, users, test_user, db):
 
 
 def test_create_user_exists(unauth_client, users, test_user_exists, db):
-    users = crud.get_users(db)
-    for user in users:
-        print(user.id, user.email)
     response = unauth_client.post(
         "/users/", json={"email": test_user_exists.email, "password": test_user_exists.password}
     )
-    users = crud.get_users(db)
-    print(response.json())
     assert response.status_code == 400
     assert response.json()["detail"] == "Email already registered"
+
+
+def test_read_users_me_ok(client, db, users):
+    response = client.get("/users/me/")
+    assert response.status_code == 200
+    # WARNING: possible bottle neck for future changes
+    assert response.json() == {
+        "id": 1,
+        "email": "user1@example.com",
+        "is_active": True,
+        "is_admin": False,
+    }
+
+
+def test_read_users_me_fault(unauth_client, db, users):
+    response = unauth_client.get("/users/me/")
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"
+
+
+### Test update user state
+
+
+def test_update_user_state_new(client, db, users):
+    response = client.put("/users/me/update_state/", json={"new_state": False})
+    print("response")
+    print(response.json())
+    assert response.status_code == 200
+    assert response.json()["Message"] == "User status updated"
+
+
+def test_update_user_state_same(client, db, users):
+    response = client.put("/users/me/update_state/", json={"new_state": True})
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User is_active is set to True already!"
+
+
+def test_update_user_state_same(unauth_client, db, users):
+    response = unauth_client.put("/users/me/update_state/", json={"new_state": True})
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Not authenticated"

@@ -32,29 +32,32 @@ def create_user(user: api_m.UserCreate, db: Session = Depends(get_db)):
 
 
 # User authentication
-@router.get("/users/me/", response_model=api_m.User)
+@router.get("/me/", response_model=api_m.User)
 async def read_users_me(current_user: Annotated[api_m.User, Depends(get_current_active_user)]):
     return current_user
 
 
-@router.put("/users/me/update_state/")
+@router.put("/me/update_state/")
+# TODO: Does this route make sence?
 def update_user_state(
-    new_state: bool,
+    new_state: api_m.UserStateUpdate,
     current_user: Annotated[api_m.User, Depends(get_current_active_user)],
     db: Session = Depends(get_db),
 ):
+    # WARNING: expection doesn't make sence
     if current_user is None:
         raise HTTPException(status_code=404, detail=f"User not found")
     # TODO: improve exception handeling
-    if current_user.is_active == new_state:
+    if current_user.is_active == new_state.new_state:
         raise HTTPException(
-            status_code=404, detail=f"User is_active is set to {new_state} already!"
+            status_code=404, detail=f"User is_active is set to {new_state.new_state} already!"
         )
-    updated_user = crud.update_is_active(db, current_user, new_state)
+    _ = crud.update_is_active(db, current_user, new_state.new_state)
     return JSONResponse(content={"Message": "User status updated"})
 
 
 # Admin authentication
+# TODO: change route
 @router.get("/users/", response_model=list[api_m.User])
 def read_users(
     current_user: Annotated[api_m.User, Depends(get_current_active_admin)],
