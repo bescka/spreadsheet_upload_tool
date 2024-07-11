@@ -9,9 +9,11 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
+
 # TODO: Needed?
 # class UserInDB(UserBase):
 #     hashed_password: str
+
 
 class User(UserBase):
     id: int
@@ -20,3 +22,7 @@ class User(UserBase):
 
     class ConfigDict:
         from_attributes = True
+
+
+class UserStateUpdate(BaseModel):
+    new_state: bool
