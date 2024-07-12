@@ -45,10 +45,10 @@ def update_user_state(
     db: Session = Depends(get_db),
 ):
     # WARNING: expection doesn't make sence
-    if current_user is None:
-        raise HTTPException(status_code=404, detail=f"User not found")
+    # if current_user is None:
+    #     raise HTTPException(status_code=404, detail=f"User not found")
     # TODO: improve exception handeling
-    if current_user.is_active == new_state.new_state:
+    if current_user.is_active is new_state.new_state:
         raise HTTPException(
             status_code=404, detail=f"User is_active is set to {new_state.new_state} already!"
         )

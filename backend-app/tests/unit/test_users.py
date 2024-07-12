@@ -74,7 +74,7 @@ def test_update_user_state_same(client, db, users):
     assert response.json()["detail"] == "User is_active is set to True already!"
 
 
-def test_update_user_state_same(unauth_client, db, users):
+def test_update_user_state_bad(unauth_client, db, users):
     response = unauth_client.put("/users/me/update_state/", json={"new_state": True})
     assert response.status_code == 401
     assert response.json()["detail"] == "Not authenticated"
