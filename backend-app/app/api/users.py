@@ -77,7 +77,7 @@ def read_user(
 ):
     db_user = crud.get_user(db, user_id=user_id)
     if db_user is None:
-        raise HTTPException(status_code=404, detail=f"{db_user} User not found")
+        raise HTTPException(status_code=404, detail=f"User not found")
     return db_user
 
 
@@ -105,15 +105,16 @@ def promote_to_admin(
     # TODO: improve exception handeling
     if db_user.is_admin is None:
         updated_user = crud.update_is_admin(db, db_user)
+        return updated_user
     else:
         raise HTTPException(status_code=404, detail=f"User is already admin")
-    return
 
 
+# TODO: change name to update_state_by_id
 @router.put("/{user_id}/update_state/")
 def update_any_user_state(
     user_id: int,
-    new_state: bool,
+    new_state: api_m.UserStateUpdate,
     current_user: Annotated[api_m.User, Depends(get_current_active_admin)],
     db: Session = Depends(get_db),
 ):
@@ -121,9 +122,9 @@ def update_any_user_state(
     if db_user is None:
         raise HTTPException(status_code=404, detail=f"User not found")
     # TODO: improve exception handeling
-    if db_user.is_active == new_state:
+    if db_user.is_active is new_state.new_state:
         raise HTTPException(
-            status_code=404, detail=f"User is_active is set to {new_state} already!"
+            status_code=404, detail=f"User is_active is set to {new_state.new_state} already!"
         )
-    updated_user = crud.update_is_active(db, db_user, new_state)
+    updated_user = crud.update_is_active(db, db_user, new_state.new_state)
     return JSONResponse(content={"Message": "User status updated"})

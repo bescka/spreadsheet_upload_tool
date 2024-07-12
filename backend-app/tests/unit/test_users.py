@@ -112,6 +112,25 @@ def test_read_users_unauth(client, db, users):
     assert response.json()["detail"] == "Not authenticated"
 
 
+### Test read user by id
+def test_read_user_by_id_ok(client_admin, db, users):
+    response = client_admin.get("/users/id/1")
+    assert response.status_code == 200
+    # WARNING: possible bottle neck for future changes
+    assert response.json() == {
+        "id": 1,
+        "email": "user1@example.com",
+        "is_active": True,
+        "is_admin": None,
+    }
+
+
+def test_read_user_by_id_bad(client_admin, db, users):
+    response = client_admin.get("/users/id/4")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"
+
+
 ### Test read user by mail
 def test_read_user_by_mail_ok(client_admin, db, users):
     response = client_admin.get("/users/mail/user1@example.com")
@@ -123,3 +142,56 @@ def test_read_user_by_mail_ok(client_admin, db, users):
         "is_active": True,
         "is_admin": None,
     }
+
+
+def test_read_user_by_mail_bad(client_admin, db, users):
+    response = client_admin.get("/users/mail/user4@example.com")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"
+
+
+### Test promote to admin
+def test_promote_to_admin_ok(client_admin, db, users):
+    response = client_admin.put("/users/1/update_admin/")
+
+    assert response.status_code == 200
+    # WARNING: possible bottle neck for future changes
+    assert response.json() == {
+        "id": 1,
+        "email": "user1@example.com",
+        "is_active": True,
+        "is_admin": True,
+    }
+
+
+def test_promote_to_admin_not_found(client_admin, db, users):
+    response = client_admin.put("/users/4/update_admin/")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"
+
+
+def test_promote_to_admin_is_admin(client_admin, db, users):
+    response = client_admin.put("/users/2/update_admin/")
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User is already admin"
+
+
+### Test update_state_by_id
+def test_update_any_user_state_ok(client_admin, db, users):
+    response = client_admin.put("/users/1/update_state/", json={"new_state": False})
+    updated_user = crud.get_user(db, 1)
+    assert response.status_code == 200
+    assert response.json()["Message"] == "User status updated"
+    assert False == updated_user.is_active
+
+
+def test_update_any_user_state_not_found(client_admin, db, users):
+    response = client_admin.put("/users/4/update_state/", json={"new_state": False})
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User not found"
+
+
+def test_update_any_user_state_same_state(client_admin, db, users):
+    response = client_admin.put("/users/1/update_state/", json={"new_state": True})
+    assert response.status_code == 404
+    assert response.json()["detail"] == "User is_active is set to True already!"
