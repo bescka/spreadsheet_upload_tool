@@ -3,7 +3,6 @@ from fastapi import APIRouter, UploadFile, HTTPException, Depends
 from fastapi.responses import JSONResponse
 import pandas as pd
 from sqlalchemy.orm import Session
-from sqlalchemy import inspect
 from app.models.user import User
 from app.api.auth import get_current_active_user
 from app.sql_db.file_crud import get_db
