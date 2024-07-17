@@ -2,8 +2,10 @@
 # def mock_get_current_active_user():
 #     # Simulate an authenticated user
 #     return User(id=1, email="test@example.com", is_active=True)
+import pytest
 
 
+# TODO: Change files to fixtures
 def test_create_upload_file_authenticated(client):
     files = {"file": ("test.csv", "1,2,3\n4,5,6\n7,8,9\n")}
     response = client.post("/fileupload/", files=files)
@@ -12,10 +14,9 @@ def test_create_upload_file_authenticated(client):
 
 
 def test_create_upload_file_unauthenticated(unauth_client):
-    # Test without patching, so the request is unauthenticated
     files = {"file": ("test.csv", "1,2,3\n4,5,6\n7,8,9\n")}
     response = unauth_client.post("/fileupload/", files=files)
-    assert response.status_code == 401  # Assuming 401 Unauthorized for unauthenticated requests
+    assert response.status_code == 401
 
 
 def test_create_upload_file_wrong_file(client):
@@ -23,3 +24,25 @@ def test_create_upload_file_wrong_file(client):
     response = client.post("/fileupload/", files=files)
     assert response.status_code == 422
     assert response.json()["detail"] == "File needs to have .csv format."
+
+
+### TODO: May Change later
+def test_create_upload_file_test(client, files_good):
+    response = client.post("/fileupload/", files=files_good)
+    assert response.status_code == 200
+
+
+def test_create_upload_file_test_bad_dtype(client, files_bad_dtype):
+    with pytest.raises(
+        AssertionError,
+        match="object of column id doesn't match <class 'pandas.core.arrays.integer.Int64Dtype'>",
+    ):
+        response = client.post("/fileupload/", files=files_bad_dtype)
+
+
+# def test_create_upload_file_test_bad_column(client, files_bad_column):
+#     with pytest.raises(
+#         AssertionError,
+#         match="Unknown colum included",
+#     ):
+#         response = client.post("/fileupload/", files=files_bad_column)
