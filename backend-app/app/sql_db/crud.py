@@ -37,6 +37,9 @@ def create_user(db: Session, user: api_m.UserCreate):
     return db_user
 
 
+# TODO: add create_admin_user
+
+
 def update_is_admin(db: Session, user: api_m.User):
     # TODO: ? Exceptin if user already admin?
     user.is_admin = True
