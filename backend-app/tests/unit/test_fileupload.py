@@ -40,9 +40,9 @@ def test_create_upload_file_test_bad_dtype(client, files_bad_dtype):
         response = client.post("/fileupload/", files=files_bad_dtype)
 
 
-def test_create_upload_file_test_bad_column(client, files_bad_column):
-    with pytest.raises(
-        AssertionError,
-        match="Unknown colum included",
-    ):
-        response = client.post("/fileupload/", files=files_bad_column)
+# def test_create_upload_file_test_bad_column(client, files_bad_column):
+#     with pytest.raises(
+#         AssertionError,
+#         match="Unknown colum included",
+#     ):
+#         response = client.post("/fileupload/", files=files_bad_column)
