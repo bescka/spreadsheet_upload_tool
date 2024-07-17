@@ -95,3 +95,36 @@ def users(db):
     create_user(db, api_m.UserCreate(email="user3@example.com", password="test3"))
     user3 = get_user_by_email(db, email="user3@example.com")
     update_is_active(db, user3, new_state=False)
+
+
+@pytest.fixture(scope="function")
+def files_good():
+    files = {
+        "file": (
+            "test.csv",
+            "name,email,id,01.01.2024,02.01.2024\ntim, tim@kh.de,1,2,5\nmax, max@kh.de,2,3,20\ntina, tina@kh.de,3,30,2",
+        )
+    }
+    return files
+
+
+@pytest.fixture(scope="function")
+def files_bad_dtype():
+    files = {
+        "file": (
+            "test.csv",
+            "name,email,id,01.01.2024,02.01.2024\ntim, tim@kh.de,1,2,5\nmax, max@kh.de,test,3,20\ntina, tina@kh.de,3,30,2",
+        )
+    }
+    return files
+
+
+@pytest.fixture(scope="function")
+def files_bad_column():
+    files = {
+        "file": (
+            "test.csv",
+            "fullname,email,id,01.01.2024,02.01.2024\ntim, tim@kh.de,1,2,5\nmax, max@kh.de,test,3,20\ntina, tina@kh.de,3,30,2",
+        )
+    }
+    return files
