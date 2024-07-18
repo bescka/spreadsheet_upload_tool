@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 from app.api.auth import get_current_active_user
 from app.sql_db.file_crud import get_db
-from app.models import file_db
+from app.sql_db.file_crud import create_update_table, insert_data
 
 
 router = APIRouter(tags=["fileupload"])
@@ -32,8 +32,8 @@ async def create_upload_file(
 
             df = pd.read_csv(file.file)
 
-            filetable = file_db.create_update_table(df, engine, "file_table")
-            file_db.insert_data(db, df, filetable)
+            filetable = create_update_table(df, engine, "file_table")
+            insert_data(db, df, filetable)
             return JSONResponse([df.to_json()])
         else:
             raise HTTPException(status_code=422, detail="File needs to have .csv format.")
