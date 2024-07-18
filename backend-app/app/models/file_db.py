@@ -9,6 +9,7 @@ def create_file_table_class(df, existing_columns=None, only_new_columns=False):
         __tablename__ = "file_table"
         __table_args__ = {"extend_existing": "extend_existing"}
         # HACK: May change to use df index for id not autoincrement give id column
+        # also name `id` could be as column in file, couses errror
         id = Column(Integer, primary_key=True, autoincrement=True)
 
         # Add columns based on the DataFrame
@@ -30,7 +31,7 @@ def create_file_table_class(df, existing_columns=None, only_new_columns=False):
 
 def update_schema(df, engine, metadata, table_name):
     # TODO:
-    # - print/log if table staies unchanged
+    # - print/log if table stays unchanged/ exception
     # - change alter_stmt to save option
     table = metadata.tables.get(table_name)
     existing_columns = {col.name: col.type for col in table.columns}

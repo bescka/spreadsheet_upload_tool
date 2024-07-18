@@ -15,22 +15,27 @@ def get_db():
 
 
 def create_update_table(df, engine, table_name):
+    # TODO: handel if table not updated
     metadata = MetaData()
     metadata.reflect(engine)
     if (len(Base_file_db.metadata.tables) == 0) & (len(metadata.tables) == 0):
+        # change to log
+        print(f"Creating new table '{table_name}'.")
         FileTable = create_file_table_class(df)
         Base_file_db.metadata.create_all(engine)
-        print(f"Creating new table '{table_name}'.")
-        return FileTable
+        return FileTable, f"Table with name {table_name} created"
     else:
         if table_name in metadata.tables:
+            # change to log
             print(f"Table '{table_name}' already exists. Using existing schema.")
-            return update_schema(df, engine, metadata, table_name)
+            FileTable = update_schema(df, engine, metadata, table_name)
+            return FileTable, f"Table with name {table_name} updated"
         else:
             FileTable = create_file_table_class(df)
             Base_file_db.metadata.create_all(engine)
+            # change to log
             print(f"Creating new table '{table_name}'.")
-            return FileTable
+            return FileTable, f"Table with name {table_name} created"
 
 
 def insert_data(db: Session, df: pd.DataFrame, FileTable, update_column_name="id"):

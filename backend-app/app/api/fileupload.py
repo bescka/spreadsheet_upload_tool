@@ -32,9 +32,9 @@ async def create_upload_file(
 
             df = pd.read_csv(file.file)
 
-            filetable = create_update_table(df, engine, "file_table")
+            filetable, msg = create_update_table(df, engine, "file_table")
             insert_data(db, df, filetable)
-            return JSONResponse([df.to_json()])
+            return JSONResponse(msg)
         else:
             raise HTTPException(status_code=422, detail="File needs to have .csv format.")
     except Exception as e:
