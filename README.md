@@ -74,12 +74,18 @@ Other
 - CSS/ Frontend
 - Containerization? Docker? Kubernetes? 
 - Continuous integration? 
+- Resolve **DeprecationWarning**: crypt 
+- Resolve **DeprecationWarning**: app to --> explicit style 
+- Check 404 Exceptions 
+
+## Discussion 
+- 
 
 ## Process Qu
 - Best practice for commits/ git management
 - How does rebasing work? 
 - Where do you put tokens securely? local storage might be accessible from javascripts. 
+- **How to handel unregistered users?**
 
 ## Questions
 JWT uses only username why?
-
