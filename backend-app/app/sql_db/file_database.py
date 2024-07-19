@@ -1,9 +1,11 @@
+import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# HACK: Change to get_env
-SQLALCHEMY_DATABASE_URL = "sqlite:///./file_sql.db"
+load_dotenv()
+SQLALCHEMY_DATABASE_URL = os.getenv("FILE_DB_URL")
 # SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
 
 engine = create_engine(
