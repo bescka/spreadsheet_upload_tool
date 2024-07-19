@@ -16,7 +16,13 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    env:
+      FASTAPI_SECRET_KEY: ${{secrets.FASTAPI_SECRET_KEY}}
+      FASTAPI_HASH_ALGORITHM: ${{secrets.FASTAPI_HASH_ALGORITHM}}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
+      USER_DB_URL: ${{secrets.USER_DB_URL}}
+      FILE_DB_URL: ${{secrets.FILE_DB_URL}}
+      
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python 3.11
