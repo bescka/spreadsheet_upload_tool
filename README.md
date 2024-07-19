@@ -1,6 +1,12 @@
 # spreadsheet_uploader
 Uploader tool
 
+
+## Backend
+`pip install -r requirements.txt`
+`cd backend-app`
+`uvicorn app.main:app --reload`
+
 ## Requirements
 
 Main objectives
