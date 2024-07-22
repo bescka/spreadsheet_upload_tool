@@ -1,7 +1,11 @@
-backend-start: from source: 
+# backend: 
+from backend-app: 
 ```
 uvicorn app.main:app --reload
 ```
+docs available with SwaggerUI at /docs
+
+
 frontend-start: from frontend-app: 
 ```
 yarn start

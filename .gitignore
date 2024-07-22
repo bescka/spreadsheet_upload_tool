@@ -171,3 +171,11 @@ example_spread.xlsx
 frontend-app
 =======
 >>>>>>> main
+TODO.md
+example_spread.csv
+
+new-frontend-app/
+frontend-app-old/
+*.db
+frontend-app/
+

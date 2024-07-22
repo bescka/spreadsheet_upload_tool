@@ -11,9 +11,12 @@ from app.sql_db.database import engine
 from app.api.auth import get_current_active_user, get_current_active_admin
 
 # WARNING: only temporary not needed if connected to already existing database
-models.Base.metadata.create_all(bind=engine)
 
-
+# models.Base.metadata.create_all(bind=engine)
+def init_db():
+    print('creating db...')
+    models.Base.metadata.create_all(bind=engine)
+    print('db created')
 router = APIRouter(
     prefix="/users",
     tags=["user"],

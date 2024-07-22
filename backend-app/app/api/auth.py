@@ -22,7 +22,7 @@ import os
 load_dotenv()
 SECRET_KEY = os.getenv("FASTAPI_SECRET_KEY")
 ALGORITHM = os.getenv("FASTAPI_HASH_ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
