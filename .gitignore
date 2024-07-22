@@ -168,7 +168,6 @@ app.py
 sql_app.db
 example_spread.xlsx
 .gitignore
-frontend-app
 =======
 >>>>>>> main
 TODO.md
@@ -177,5 +176,4 @@ example_spread.csv
 new-frontend-app/
 frontend-app-old/
 *.db
-frontend-app/
 
