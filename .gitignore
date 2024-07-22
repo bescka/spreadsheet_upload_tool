@@ -168,7 +168,6 @@ app.py
 sql_app.db
 example_spread.xlsx
 .gitignore
-frontend-app
 =======
 >>>>>>> main
 TODO.md
