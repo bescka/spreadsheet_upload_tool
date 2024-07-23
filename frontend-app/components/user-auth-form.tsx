@@ -36,17 +36,16 @@ export function UserAuthForm({ className, onSuccess, ...props }: UserAuthFormPro
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/token`, {
+      const response = await fetch('/api/proxy-login', {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          "Content-Type": "application/json",
         },
-        body: new URLSearchParams({
-          username: data.email,
+        body: JSON.stringify({
+          email: data.email,
           password: data.password,
         }),
       });
-
       const result = await response.json();
 
       if (response.ok) {
