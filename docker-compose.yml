@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: ./backend-app/
+      dockerfile: Dockerfile
+    networks:
+      - my_network
+    ports:
+      - "8000:8000"  # Example port mapping
+
+  frontend:
+    build:
+      context: ./frontend-app/
+      dockerfile: Dockerfile
+    networks:
+      - my_network
+    ports:
+      - "3000:3000"  # Example port mapping
+    depends_on:
+      - backend
+
+networks:
+  my_network:
+    driver: bridge  
+
