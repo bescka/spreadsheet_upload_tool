@@ -1,6 +1,4 @@
-###############################
-## Spreadsheet Uploader Tool ## 
-###############################
+# Spreadsheet Uploader Tool
 
 
 To run: 
