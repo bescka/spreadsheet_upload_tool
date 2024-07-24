@@ -17,7 +17,11 @@ def test_create_upload_file_new(client, files_good):
     assert response.json() == "Table with name file_table created"
 
 
-def test_create_upload_file_update(client, file_db, files_good_updated):
+def test_create_upload_file_update(client, db, file_db, files_good, files_good_updated):
+    # HACK: file_db fixture should creat a table with some entries
+    # client.post("/fileupload/", files=files_good) shouldn't be necessary!
+
+    client.post("/fileupload/", files=files_good)
     response = client.post("/fileupload/", files=files_good_updated)
 
     assert response.status_code == 200
