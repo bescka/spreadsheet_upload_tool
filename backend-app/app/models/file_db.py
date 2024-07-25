@@ -46,11 +46,11 @@ def update_schema(df, engine, metadata, table_name):
                 )
                 logger.info(f"Executing: {alter_stmt}")
                 conn.execute(alter_stmt)
+                conn.commit()
             logger.info("Table updated")
 
     metadata.clear()
     metadata.reflect(bind=engine)
-    table = metadata.tables.get(table_name)
     existing_columns = {col.name: col.type for col in table.columns}
         
     FileTable = create_file_table_class(df, table_name, existing_columns=existing_columns)
