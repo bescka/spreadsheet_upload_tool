@@ -34,4 +34,4 @@ async def create_upload_file(
             raise HTTPException(status_code=422, detail="File needs to have .csv format.")
     except Exception as e:
         logger.error(f"Error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return e
