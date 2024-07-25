@@ -5,6 +5,9 @@ import pandas as pd
 from app.models.file_db import create_file_table_class, update_schema
 import logging
 
+logger = logging.getLogger(__name__)
+
+
 def get_db():
     db = SessionLocalFileDb()
     try:
@@ -16,13 +19,15 @@ def create_update_table(df, engine, table_name):
     metadata = MetaData()
     metadata.reflect(engine)
     if table_name not in metadata.tables:
-        logging.info(f"Creating new table '{table_name}'.")
+        logger.info(f"Creating new table '{table_name}'.")
         FileTable = create_file_table_class(df, table_name)
         Base_file_db.metadata.create_all(engine)
         return FileTable, f"Table with name {table_name} created"
     else:
-        logging.info(f"Table '{table_name}' already exists. Using existing schema.")
+        logger.info(f"Table '{table_name}' already exists. Using existing schema.")
         FileTable = update_schema(df, engine, metadata, table_name)
+        metadata.clear()
+        metadata.reflect(bind=engine)
         return FileTable, f"Table with name {table_name} updated"
 
 def insert_data(db: Session, df: pd.DataFrame, FileTable, update_column_name="id"):
@@ -52,3 +57,4 @@ def insert_data(db: Session, df: pd.DataFrame, FileTable, update_column_name="id
             db.add(new_row)
         row_index += 1
     db.commit()
+    logger.info(f"Data inserted into {FileTable.__tablename__}")

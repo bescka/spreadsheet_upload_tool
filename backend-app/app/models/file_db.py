@@ -3,6 +3,8 @@ from app.sql_db.file_database import Base_file_db
 from app.models.db_utils import map_dtype
 import logging
 
+logger = logging.getLogger(__name__)
+
 def create_file_table_class(df, table_name, existing_columns=None, only_new_columns=False):
     columns = {
         '__tablename__': table_name,
@@ -22,11 +24,12 @@ def create_file_table_class(df, table_name, existing_columns=None, only_new_colu
             if column_name != "id":  # Skip id as it's already defined
                 columns[column_name] = Column(column_type)
     
-    logging.info(f"Columns for {table_name}: {columns}")
+    logger.info(f"Columns for {table_name}: {columns}")
     FileTable = type('FileTable', (Base_file_db,), columns)
     return FileTable
 
 def update_schema(df, engine, metadata, table_name):
+    metadata.reflect(bind=engine)
     table = metadata.tables.get(table_name)
     existing_columns = {col.name: col.type for col in table.columns}
 
@@ -41,9 +44,14 @@ def update_schema(df, engine, metadata, table_name):
                 alter_stmt = text(
                     f'ALTER TABLE {table_name} ADD COLUMN "{column.name}" {column.type}'
                 )
-                logging.info(f"Executing: {alter_stmt}")
+                logger.info(f"Executing: {alter_stmt}")
                 conn.execute(alter_stmt)
-            logging.info("Table updated")
-    
+            logger.info("Table updated")
+
+    metadata.clear()
+    metadata.reflect(bind=engine)
+    table = metadata.tables.get(table_name)
+    existing_columns = {col.name: col.type for col in table.columns}
+        
     FileTable = create_file_table_class(df, table_name, existing_columns=existing_columns)
     return FileTable
