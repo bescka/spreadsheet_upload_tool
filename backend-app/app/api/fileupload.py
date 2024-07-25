@@ -1,19 +1,20 @@
+import logging
 from typing import Annotated
-from fastapi import APIRouter, UploadFile, HTTPException, Depends
-from fastapi.responses import JSONResponse
-import pandas as pd
-from sqlalchemy.orm import Session
-from app.models.user import User
-from app.api.auth import get_current_active_user
-from app.sql_db.file_crud import get_db
-from app.sql_db.file_crud import create_update_table, insert_data
 
+import pandas as pd
+from app.api.auth import get_current_active_user
+from app.models.user import User
+from app.sql_db.file_crud import create_update_table, get_db, insert_data
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["fileupload"])
 
 
 @router.post("/fileupload/", response_model=User)
-# WARNING: Naming?
 async def create_upload_file(
     file: UploadFile,
     current_user: Annotated[User, Depends(get_current_active_user)],
@@ -21,21 +22,16 @@ async def create_upload_file(
 ):
     try:
         engine = db.get_bind().engine
-        print(engine.name)
-        if file.filename.split(".")[-1] == "csv":  # WARNING: create check_file_type functin?
-            # TODO: used with sanatization
-            # schema_check = {
-            #     "static_cols_names": {"name": str, "email": str, "id": pd.Int64Dtype},
-            #     "static_cols_number": 3,
-            #     "dynamic_col_dtype": {"other": pd.Int64Dtype},
-            # }
-
+        logger.info(f"Database engine: {engine.name}")
+        if file.filename.split(".")[-1] == "csv":
             df = pd.read_csv(file.file)
-
+            logger.info(f"DataFrame loaded: {df.head()}")
             filetable, msg = create_update_table(df, engine, "file_table")
+            logger.info(f"Table creation/update message: {msg}")
             insert_data(db, df, filetable)
-            return JSONResponse(msg)
+            return JSONResponse({"message": msg})
         else:
             raise HTTPException(status_code=422, detail="File needs to have .csv format.")
     except Exception as e:
+        logger.error(f"Error: {str(e)}")
         raise e

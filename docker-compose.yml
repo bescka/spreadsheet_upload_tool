@@ -6,7 +6,12 @@ services:
     networks:
       - my_network
     ports:
-      - "8000:8000"  # Example port mapping
+      - "8000:8000"
+    depends_on:
+      - userdb
+      - filedb
+    env_file:
+      - backend.env
 
   frontend:
     build:
@@ -15,11 +20,37 @@ services:
     networks:
       - my_network
     ports:
-      - "3000:3000"  # Example port mapping
+      - "3000:3000"
     depends_on:
       - backend
+    env_file:
+      - frontend.env
+
+  userdb:
+    image: postgres:13
+    volumes:
+      - userdb_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - my_network
+    env_file:
+      - database.env
+  filedb:
+    image: postgres:13
+    volumes:
+      - filedb_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - my_network
+    env_file:
+      - database.env
+
+volumes:
+  userdb_data:
+  filedb_data:
 
 networks:
   my_network:
-    driver: bridge  
-
+    driver: bridge

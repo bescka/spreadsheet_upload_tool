@@ -176,4 +176,6 @@ example_spread.csv
 new-frontend-app/
 frontend-app-old/
 *.db
-
+backend.env
+frontend.env
+database.env
