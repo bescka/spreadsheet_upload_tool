@@ -1,16 +1,18 @@
-from typing import Annotated
-from fastapi import APIRouter, UploadFile, HTTPException, Depends
-from fastapi.responses import JSONResponse
-import pandas as pd
-from sqlalchemy.orm import Session
-from app.models.user import User
-from app.api.auth import get_current_active_user
-from app.sql_db.file_crud import get_db, create_update_table, insert_data
 import logging
+from typing import Annotated
+
+import pandas as pd
+from app.api.auth import get_current_active_user
+from app.models.user import User
+from app.sql_db.file_crud import create_update_table, get_db, insert_data
+from fastapi import APIRouter, Depends, HTTPException, UploadFile
+from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["fileupload"])
+
 
 @router.post("/fileupload/", response_model=User)
 async def create_upload_file(

@@ -14,7 +14,7 @@ def test_create_upload_file_new(client, files_good):
     response = client.post("/fileupload/", files=files_good)
 
     assert response.status_code == 200
-    assert response.json() == "Table with name file_table created"
+    assert response.json()["message"] == "Table with name file_table created"
 
 
 def test_create_upload_file_update(client, db, file_db, files_good, files_good_updated):
@@ -25,4 +25,4 @@ def test_create_upload_file_update(client, db, file_db, files_good, files_good_u
     response = client.post("/fileupload/", files=files_good_updated)
 
     assert response.status_code == 200
-    assert response.json() == "Table with name file_table updated"
+    assert response.json()["message"] == "Table with name file_table updated"
