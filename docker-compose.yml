@@ -31,7 +31,7 @@ services:
     volumes:
       - userdb_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5433:5432"
     networks:
       - my_network
     env_file:
@@ -41,7 +41,7 @@ services:
     volumes:
       - filedb_data:/var/lib/postgresql/data
     ports:
-      - "4321:4321"
+      - "5432:5432"
     networks:
       - my_network
     env_file:

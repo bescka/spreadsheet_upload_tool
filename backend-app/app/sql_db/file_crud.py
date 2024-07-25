@@ -1,10 +1,9 @@
-from app.sql_db.file_database import SessionLocalFileDb
+from app.sql_db.file_database import SessionLocalFileDb, Base_file_db
 from sqlalchemy.orm import Session
 from sqlalchemy import MetaData
 import pandas as pd
-from app.sql_db.file_database import Base_file_db
 from app.models.file_db import create_file_table_class, update_schema
-
+import logging
 
 def get_db():
     db = SessionLocalFileDb()
@@ -13,34 +12,30 @@ def get_db():
     finally:
         db.close()
 
-
 def create_update_table(df, engine, table_name):
-    # TODO: handel if table not updated
     metadata = MetaData()
     metadata.reflect(engine)
-    if (len(Base_file_db.metadata.tables) == 0) & (len(metadata.tables) == 0):
-        # change to log
-        print(f"Creating new table '{table_name}'.")
-        FileTable = create_file_table_class(df)
+    if table_name not in metadata.tables:
+        logging.info(f"Creating new table '{table_name}'.")
+        FileTable = create_file_table_class(df, table_name)
         Base_file_db.metadata.create_all(engine)
         return FileTable, f"Table with name {table_name} created"
     else:
-        if table_name in metadata.tables:
-            # change to log
-            print(f"Table '{table_name}' already exists. Using existing schema.")
-            FileTable = update_schema(df, engine, metadata, table_name)
-            return FileTable, f"Table with name {table_name} updated"
-        else:
-            FileTable = create_file_table_class(df)
-            Base_file_db.metadata.create_all(engine)
-            # change to log
-            print(f"Creating new table '{table_name}'.")
-            return FileTable, f"Table with name {table_name} created"
-
+        logging.info(f"Table '{table_name}' already exists. Using existing schema.")
+        FileTable = update_schema(df, engine, metadata, table_name)
+        return FileTable, f"Table with name {table_name} updated"
 
 def insert_data(db: Session, df: pd.DataFrame, FileTable, update_column_name="id"):
+    # Ensure all numeric columns are correctly cast to numeric types
+    numeric_cols = df.select_dtypes(include=['number']).columns
+    df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce')
+    df[numeric_cols] = df[numeric_cols].fillna(0)
+
+    # Ensure all string columns are correctly cast to string types
+    string_cols = df.select_dtypes(include=['object']).columns
+    df[string_cols] = df[string_cols].astype(str)
+
     data = df.to_dict(orient="records")
-    # HACK:
     row_index = 1
     for record in data:
         existing_row = (
