@@ -2,9 +2,7 @@ services:
   frontend:
     build:
       context: ./frontend-app/
-      dockerfile: Dockerfile.dev
-    volumes:
-      - ./frontend-app:/frontend-app
+      dockerfile: Dockerfile
     networks:
       - my_network
     ports:
@@ -17,9 +15,7 @@ services:
   backend:
     build:
       context: ./backend-app/
-      dockerfile: Dockerfile.dev
-    volumes:
-      - ./backend-app:/backend-app
+      dockerfile: Dockerfile
     networks:
       - my_network
     ports:

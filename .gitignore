@@ -172,6 +172,7 @@ example_spread.xlsx
 >>>>>>> main
 TODO.md
 example_spread.csv
+example_spread_update.csv
 
 new-frontend-app/
 frontend-app-old/
@@ -179,3 +180,4 @@ frontend-app-old/
 backend.env
 frontend.env
 database.env
+
