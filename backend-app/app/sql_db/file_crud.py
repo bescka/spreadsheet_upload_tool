@@ -1,9 +1,11 @@
-from app.sql_db.file_database import SessionLocalFileDb, Base_file_db
-from sqlalchemy.orm import Session
-from sqlalchemy import MetaData
-import pandas as pd
-from app.models.file_db import create_file_table_class, update_schema
 import logging
+
+import pandas as pd
+from sqlalchemy import MetaData
+from sqlalchemy.orm import Session
+
+from app.models.file_db import create_file_table_class, update_schema
+from app.sql_db.file_database import Base_file_db, SessionLocalFileDb
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +16,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 
 def create_update_table(df, engine, table_name):
     metadata = MetaData()
@@ -30,14 +33,15 @@ def create_update_table(df, engine, table_name):
         metadata.reflect(bind=engine)
         return FileTable, f"Table with name {table_name} updated"
 
+
 def insert_data(db: Session, df: pd.DataFrame, FileTable, update_column_name="id"):
     # Ensure all numeric columns are correctly cast to numeric types
-    numeric_cols = df.select_dtypes(include=['number']).columns
-    df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors='coerce')
+    numeric_cols = df.select_dtypes(include=["number"]).columns
+    df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors="coerce")
     df[numeric_cols] = df[numeric_cols].fillna(0)
 
     # Ensure all string columns are correctly cast to string types
-    string_cols = df.select_dtypes(include=['object']).columns
+    string_cols = df.select_dtypes(include=["object"]).columns
     df[string_cols] = df[string_cols].astype(str)
 
     data = df.to_dict(orient="records")

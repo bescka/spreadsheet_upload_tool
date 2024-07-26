@@ -1,22 +1,23 @@
 from typing import Annotated
-from fastapi import Depends, APIRouter, HTTPException
+
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from app.sql_db import crud
 import app.models.database as models  # INFO: Naming?
 import app.models.user as api_m
+from app.api.auth import get_current_active_admin, get_current_active_user
+from app.sql_db import crud
 from app.sql_db.crud import get_db
 from app.sql_db.database import engine
-from app.api.auth import get_current_active_user, get_current_active_admin
 
-# WARNING: only temporary not needed if connected to already existing database
 
-# models.Base.metadata.create_all(bind=engine)
 def init_db():
-    print('creating db...')
+    print("creating db...")
     models.Base.metadata.create_all(bind=engine)
-    print('db created')
+    print("db created")
+
+
 router = APIRouter(
     prefix="/users",
     tags=["user"],
@@ -53,7 +54,8 @@ def update_user_state(
     # TODO: improve exception handeling
     if current_user.is_active is new_state.new_state:
         raise HTTPException(
-            status_code=404, detail=f"User is_active is set to {new_state.new_state} already!"
+            status_code=404,
+            detail=f"User is_active is set to {new_state.new_state} already!",
         )
     _ = crud.update_is_active(db, current_user, new_state.new_state)
     return JSONResponse(content={"Message": "User status updated"})
@@ -127,7 +129,8 @@ def update_any_user_state(
     # TODO: improve exception handeling
     if db_user.is_active is new_state.new_state:
         raise HTTPException(
-            status_code=404, detail=f"User is_active is set to {new_state.new_state} already!"
+            status_code=404,
+            detail=f"User is_active is set to {new_state.new_state} already!",
         )
     updated_user = crud.update_is_active(db, db_user, new_state.new_state)
     return JSONResponse(content={"Message": "User status updated"})

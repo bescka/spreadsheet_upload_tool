@@ -1,10 +1,8 @@
-from fastapi import HTTPException
-from sqlalchemy import update
 from sqlalchemy.orm import Session
 
+from app.core.security import get_password_hashed
 from app.models import database as sql_m
 from app.models import user as api_m
-from app.core.security import get_password_hashed
 from app.sql_db.database import SessionLocal
 
 

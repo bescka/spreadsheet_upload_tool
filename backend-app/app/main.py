@@ -1,16 +1,16 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from .api.users import init_db
-from .api import auth, users, fileupload
 import logging
 import sys
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from .api import auth, fileupload, users
+from .api.users import init_db
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout)  # Output to console
-    ]
+    handlers=[logging.StreamHandler(sys.stdout)],
 )
 
 app = FastAPI()
@@ -27,9 +27,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("startup")
 def on_startup():
     init_db()
+
 
 # @app.get('/')
 # async def root():
