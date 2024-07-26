@@ -3,14 +3,15 @@ services:
     build:
       context: ./frontend-app/
       dockerfile: Dockerfile.dev
-    volumes:
-      - ./frontend-app:/frontend-app
     networks:
       - my_network
     ports:
       - "3000:3000"
     depends_on:
       - backend
+    volumes:
+      - /app/node_modules
+      - ./frontend-app:/app
     env_file:
       - frontend.env
 
@@ -18,8 +19,6 @@ services:
     build:
       context: ./backend-app/
       dockerfile: Dockerfile.dev
-    volumes:
-      - ./backend-app:/backend-app
     networks:
       - my_network
     ports:
