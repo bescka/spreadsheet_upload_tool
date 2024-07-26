@@ -166,18 +166,16 @@ cython_debug/
 app.py
 <<<<<<< HEAD
 sql_app.db
-example_spread.xlsx
-.gitignore
 =======
 >>>>>>> main
+
+
 TODO.md
 example_spread.csv
 example_spread_update.csv
 
-new-frontend-app/
-frontend-app-old/
 *.db
 backend.env
 frontend.env
 database.env
-
+.next
