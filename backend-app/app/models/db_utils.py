@@ -1,5 +1,5 @@
-from sqlalchemy import Integer, String, Float
 import pandas as pd
+from sqlalchemy import Float, Integer, String
 
 
 def map_dtype(dtype):

@@ -1,23 +1,18 @@
 # New imports security.py
-from app.models.token import Token, TokenData
-from app.models.user import User, UserCreate
-from app.sql_db.crud import get_db, get_user_by_email
-from sqlalchemy.orm import Session
-from app.core.security import verify_password
-
-from typing import Annotated
-from fastapi import APIRouter, UploadFile, HTTPException, Depends, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from fastapi.responses import JSONResponse
-from jose import JWTError, jwt
-from datetime import datetime, timedelta, timezone
-import pandas as pd
-from starlette.responses import JSONResponse
-
-from app.core import settings
-from dotenv import load_dotenv
 import os
+from datetime import datetime, timedelta, timezone
+from typing import Annotated
 
+from dotenv import load_dotenv
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import JWTError, jwt
+from sqlalchemy.orm import Session
+
+from app.core.security import verify_password
+from app.models.token import Token, TokenData
+from app.models.user import User
+from app.sql_db.crud import get_db, get_user_by_email
 
 load_dotenv()
 SECRET_KEY = os.getenv("FASTAPI_SECRET_KEY")
@@ -92,7 +87,8 @@ async def api_health_check():
 
 @router.post("/token")
 async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Session = Depends(get_db)
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Session = Depends(get_db),
 ) -> Token:
     user = authenticate_user(form_data.username, form_data.password, db=db)
     if not user:

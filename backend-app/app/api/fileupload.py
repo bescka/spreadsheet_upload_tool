@@ -2,12 +2,13 @@ import logging
 from typing import Annotated
 
 import pandas as pd
-from app.api.auth import get_current_active_user
-from app.models.user import User
-from app.sql_db.file_crud import create_update_table, get_db, insert_data
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+
+from app.api.auth import get_current_active_user
+from app.models.user import User
+from app.sql_db.file_crud import create_update_table, get_db, insert_data
 
 logger = logging.getLogger(__name__)
 
