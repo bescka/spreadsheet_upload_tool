@@ -2,7 +2,7 @@ services:
   frontend:
     build:
       context: ./frontend-app/
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     environment:
       - NEXT_PUBLIC_ENVIRONMENT
       - NEXT_PUBLIC_API_URL
@@ -16,7 +16,7 @@ services:
   backend:
     build:
       context: ./backend-app/
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     environment:
       - FASTAPI_SECRET_KEY
       - FASTAPI_HASH_ALGORITHM
