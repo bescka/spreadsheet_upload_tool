@@ -28,9 +28,8 @@ jobs:
         NEXT_PUBLIC_ENVIRONMENT: ${{secrets.NEXT_PUBLIC_ENVIRONMENT}}
         NEXT_PUBLIC_API_URL: ${{secrets.NEXT_PUBLIC_API_URL}}
       run: |
-        docker-compose -f docker-compose.prod.yml build
-        sleep 10
-        docker-compose -f docker-compose.prod.yml up --abort-on-container-exit
+        docker-compose -f docker-compose.prod.yml up -d
+        sleep 30
 
     - name: Check container status
       run: docker ps -a
