@@ -1,0 +1,34 @@
+name: Docker
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build-containers:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build and run the container
+      env:
+        FASTAPI_SECRET_KEY: ${{secrets.FASTAPI_SECRET_KEY}}
+        FASTAPI_HASH_ALGORITHM: ${{secrets.FASTAPI_HASH_ALGORITHM}}
+        ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
+        USER_DB_URL: ${{secrets.USER_DB_URL}}
+        FILE_DB_URL: ${{secrets.FILE_DB_URL}}
+        POSTGRES_USER: ${{secrets.POSTGRES_USER}}
+        POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
+        POSTGRES_DB: ${{secrets.POSTGRES_DB}}
+        NEXT_PUBLIC_ENVIRONMENT: ${{secrets.NEXT_PUBLIC_ENVIRONMENT}}
+        NEXT_PUBLIC_API_URL: ${{secrets.NEXT_PUBLIC_API_URL}}
+      run: |
+        docker-compose -f docker-compose.prod.yml build
+        sleep 10
+        docker-compose -f docker-compose.prod.yml up --abort-on-container-exit
+

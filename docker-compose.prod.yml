@@ -1,56 +1,32 @@
 services:
-  frontend:
-    build:
-      context: ./frontend-app/
-      dockerfile: Dockerfile
-    networks:
-      - my_network
-    ports:
-      - "3000:3000"
-    depends_on:
-      - backend
-    env_file:
-      - frontend.env
-
   backend:
-    build:
-      context: ./backend-app/
-      dockerfile: Dockerfile
-    networks:
-      - my_network
+    image: your_backend_image
+    environment:
+      - FASTAPI_SECRET_KEY
+      - FASTAPI_HASH_ALGORITHM
+      - ACCESS_TOKEN_EXPIRE_MINUTES
+      - USER_DB_URL
+      - FILE_DB_URL
     ports:
       - "8000:8000"
-    depends_on:
-      - userdb
-      - filedb
-    env_file:
-      - backend.env
 
-  userdb:
-    image: postgres:13
+  database:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
     volumes:
-      - userdb_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+
+  frontend:
+    image: your_frontend_image
+    environment:
+      - NEXT_PUBLIC_ENVIRONMENT
+      - NEXT_PUBLIC_API_URL
     ports:
-      - "5433:5432"
-    networks:
-      - my_network
-    env_file:
-      - database.env
-  filedb:
-    image: postgres:13
-    volumes:
-      - filedb_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - my_network
-    env_file:
-      - database.env
+      - "3000:3000"
 
 volumes:
-  userdb_data:
-  filedb_data:
+  postgres_data:
 
-networks:
-  my_network:
-    driver: bridge
