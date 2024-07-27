@@ -11,10 +11,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY /app/ /app/
 
-ENV FASTAPI_HASH_ALGORITHM=HS256
-ENV ACCESS_TOKEN_EXPIRE_MINUTES=30
-ENV USER_DB_URL=sqlite:///./sql_app.db
-ENV FILE_DB_URL=sqlite:///./file_sql.db
 
 EXPOSE 8000
 
