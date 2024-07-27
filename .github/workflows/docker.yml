@@ -20,8 +20,8 @@ jobs:
         FASTAPI_SECRET_KEY: ${{secrets.FASTAPI_SECRET_KEY}}
         FASTAPI_HASH_ALGORITHM: ${{secrets.FASTAPI_HASH_ALGORITHM}}
         ACCESS_TOKEN_EXPIRE_MINUTES: ${{secrets.ACCESS_TOKEN_EXPIRE_MINUTES}}
-        USER_DB_URL: ${{secrets.USER_DB_URL}}
-        FILE_DB_URL: ${{secrets.FILE_DB_URL}}
+        USER_DB_URL: ${{secrets.DOCKER_USER_DB_URL}}
+        FILE_DB_URL: ${{secrets.DOCKER_FILE_DB_URL}}
         POSTGRES_USER: ${{secrets.POSTGRES_USER}}
         POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
         POSTGRES_DB: ${{secrets.POSTGRES_DB}}
