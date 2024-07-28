@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "uploader-backend"
+version = "0.1.0"
+description = "FastApi Backend for the spreadsheet uploader tool"
+authors = ["Rudolf Braun <48672663+BraunRudolf@users.noreply.github.com>"]
+license = "MIT license"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+uvicorn = "^0.30.3"
+fastapi = "^0.111.1"
+sqlalchemy = "^2.0.31"
+passlib = "^1.7.4"
+cryptography = "^43.0.0"
+python-jose = "^3.3.0"
+pandas = "^2.2.2"
+psycopg2 = "^2.9.9"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.2"
+black = "^24.4.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py312']
+include = '\.pyi?$'
+exclude = '(tests|venv)'

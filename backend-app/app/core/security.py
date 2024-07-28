@@ -1,19 +1,10 @@
-from passlib.context import CryptContext
-
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from passlib.hash import bcrypt
 
 
 def verify_password(plain_password, hashed_password):
-    if plain_password + "fake_hash" == hashed_password:
-        return True
-    else:
-        return False
-
-
-# return pwd_context.verify(plain_password, hashed_password)
+    return bcrypt.verify(plain_password, hashed_password)
 
 
 def get_password_hashed(password):
-    return password + "fake_hash"
-    # return pwd_context.hash(password)
+
+    return bcrypt.hash(password)
