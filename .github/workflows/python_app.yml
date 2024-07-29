@@ -1,7 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
-name: Python application
+name: FastAPI Backend
 
 on:
   push:
@@ -14,8 +11,8 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    working-directory: backend-app
     env:
       FASTAPI_SECRET_KEY: ${{secrets.FASTAPI_SECRET_KEY}}
       FASTAPI_HASH_ALGORITHM: ${{secrets.FASTAPI_HASH_ALGORITHM}}
@@ -25,24 +22,33 @@ jobs:
       
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Python 3.11
+    - name: Set up Python 3.12
       uses: actions/setup-python@v4
       with:
-        python-version: "3.11"
+        python-version: "3.12"
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install poetry==1.8.3
+        poetry install --no-cache
+        if [ -f pyproject.toml]; then poetry install
+        elif [-f requirements.txt ]; then pip install -r requirements.txt; 
+        fi
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Black check
+      run: |
+          black --check app/
+          enforce:
+            always:
     - name: Test with pytest
       run: |
         # Test backend
-        cd backend-app
-        pytest --cov=app tests
+          coverage run --source=app -m pytest tests
+          coverage report -m
+
 
