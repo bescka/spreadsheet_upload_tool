@@ -42,8 +42,6 @@ jobs:
     - name: Black check
       run: |
          poetry run black --check app/
-         enforce:
-           always:
     - name: Test with pytest
       run: |
         # Test backend
