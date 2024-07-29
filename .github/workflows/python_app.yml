@@ -12,7 +12,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    working-directory: backend-app
+    defaults:
+      run:
+        working-directory: backend-app
     env:
       FASTAPI_SECRET_KEY: ${{secrets.FASTAPI_SECRET_KEY}}
       FASTAPI_HASH_ALGORITHM: ${{secrets.FASTAPI_HASH_ALGORITHM}}
