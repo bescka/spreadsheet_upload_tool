@@ -35,6 +35,8 @@ def create_update_table(df, engine, table_name):
 
 
 def insert_data(db: Session, df: pd.DataFrame, FileTable, update_column_name="id"):
+    # TODO: error handling
+
     # Ensure all numeric columns are correctly cast to numeric types
     numeric_cols = df.select_dtypes(include=["number"]).columns
     df[numeric_cols] = df[numeric_cols].apply(pd.to_numeric, errors="coerce")
