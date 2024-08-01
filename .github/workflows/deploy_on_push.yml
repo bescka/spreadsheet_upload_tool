@@ -1,3 +1,5 @@
+name: Deploy on Push
+
 on:
   push:
     branches:
@@ -9,24 +11,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
     - name: Install SSH keys
       run: |
         echo "Installing SSH keys..."
-        install -m 600 -D /dev/null ~/.ssh/id_rsa
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        install -m 600 -D /dev/null ~/.ssh/id_ed25519
+        echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
         ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
         echo "SSH keys installed."
 
     - name: Connect and pull latest code
       run: |
         echo "Pulling latest code from remote repository..."
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull"
+        ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull"
         echo "Code pulled successfully."
 
     - name: Manage Docker Compose on Remote Server
       run: |
         echo "Managing Docker Compose on remote server..."
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+        ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           echo "Stopping and removing Docker containers..."
           cd ${{ secrets.WORK_DIR }}
           docker-compose down
@@ -44,4 +49,3 @@ jobs:
         echo "Cleaning up SSH keys..."
         rm -rf ~/.ssh
         echo "SSH keys cleaned up."
-
