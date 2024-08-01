@@ -29,6 +29,9 @@ jobs:
           --port 22 \
           --cidr ${{ steps.ip.outputs.ipv4 }}/32    
 
+    - name: Wait for security group update to propagate
+      run: sleep 30
+
     - name: Checkout repository
       uses: actions/checkout@v4
 
@@ -111,3 +114,11 @@ jobs:
         echo "Cleaning up SSH keys..."
         rm -rf ~/.ssh/id_ed25519
         echo "SSH keys cleaned up."
+
+    - name: revoke runner ip address
+      run: |
+        aws ec2 revoke-security-group-ingress \
+          --group-id $AWS_INSTANCE_SG_ID \
+          --protocol tcp \
+          --port 22 \
+          --cidr ${{ steps.ip.outputs.ipv4 }}/32
