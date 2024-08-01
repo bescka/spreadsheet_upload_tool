@@ -14,25 +14,28 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Create .ssh directory
-      run: |
-        mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
-
     - name: Install SSH keys
       run: |
         echo "Installing SSH keys..."
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
         echo "${{ secrets.EC2_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
         ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
         echo "SSH keys installed."
 
-    - name: Debug -- List .ssh directory contents
+    - name: Debug List .ssh directory contents
       run: |
         echo "Listing ~/.ssh directory contents..."
         ls -la ~/.ssh
 
-    - name: Connect and pull latest code
+    - name: Create .ssh directory on remote server
+      run: |
+        echo "Creating .ssh directory on remote server..."
+        ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
+        echo ".ssh directory created on remote server."
+
+    - name: Pull latest code
       run: |
         echo "Pulling latest code from remote repository..."
         ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull"
