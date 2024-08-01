@@ -10,14 +10,14 @@ jobs:
     name: Run Pull and Manage Containers
     runs-on: ubuntu-latest
     env: 
-      AWS_INSTANCE_SG_ID: ${{ AWS_SG_ID }}
+      AWS_INSTANCE_SG_ID: ${{ secrets.AWS_SG_ID }}
     steps:
     - name: configure aws credentials
       uses: aws-actions/configure-aws-credentials@v3
       with:
-          aws-access-key-id: ${{AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{AWS_SECRET_ACCESS_KEY}}
-          aws-region: ${{AWS_REGION}}
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: ${{secrets.AWS_REGION}}
     - name: get runner ip address
       id: ip
       uses: haythem/public-ip@v1.3
