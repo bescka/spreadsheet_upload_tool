@@ -14,13 +14,23 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Create .ssh directory
+      run: |
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+
     - name: Install SSH keys
       run: |
         echo "Installing SSH keys..."
-        install -m 600 -D /dev/null ~/.ssh/id_ed25519
-        echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-        ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
+        echo "${{ secrets.EC2_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
+        ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
         echo "SSH keys installed."
+
+    - name: Debug -- List .ssh directory contents
+      run: |
+        echo "Listing ~/.ssh directory contents..."
+        ls -la ~/.ssh
 
     - name: Connect and pull latest code
       run: |
@@ -32,8 +42,9 @@ jobs:
       run: |
         echo "Managing Docker Compose on remote server..."
         ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          echo "Stopping and removing Docker containers..."
+          set -e
           cd ${{ secrets.WORK_DIR }}
+          echo "Stopping and removing Docker containers..."
           docker-compose down
           echo "Removing Docker images..."
           docker rmi file_uploader-backend:latest || true
@@ -47,5 +58,5 @@ jobs:
     - name: Cleanup SSH keys
       run: |
         echo "Cleaning up SSH keys..."
-        rm -rf ~/.ssh
+        rm -rf ~/.ssh/id_ed25519
         echo "SSH keys cleaned up."
