@@ -12,7 +12,14 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+
+    - name: Create .ssh directory
+      run: |
+        echo "Creating .ssh directory..."
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+        echo ".ssh directory created."
 
     - name: Install SSH keys
       run: |
@@ -21,13 +28,27 @@ jobs:
         chmod 700 ~/.ssh
         echo "${{ secrets.EC2_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
+        echo "SSH key file created and permissions set."
         ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-        echo "SSH keys installed."
+        echo "SSH host key added to known_hosts."
+      env:
+        EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
+        SSH_HOST: ${{ secrets.SSH_HOST }}
 
     - name: Debug List .ssh directory contents
       run: |
         echo "Listing ~/.ssh directory contents..."
         ls -la ~/.ssh
+        cat ~/.ssh/id_ed25519
+        echo "Done listing ~/.ssh directory contents."
+
+    - name: Test SSH connection
+      run: |
+        echo "Testing SSH connection..."
+        ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo 'SSH connection successful'"
+      env:
+        SSH_USER: ${{ secrets.SSH_USER }}
+        SSH_HOST: ${{ secrets.SSH_HOST }}
 
     - name: Create .ssh directory on remote server
       run: |
@@ -35,13 +56,13 @@ jobs:
         ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
         echo ".ssh directory created on remote server."
 
-    - name: Pull latest code
+    - name: Pull latest code on remote server
       run: |
         echo "Pulling latest code from remote repository..."
         ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull"
         echo "Code pulled successfully."
 
-    - name: Manage Docker Compose on Remote Server
+    - name: Manage Docker Compose on remote server
       run: |
         echo "Managing Docker Compose on remote server..."
         ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
@@ -58,7 +79,7 @@ jobs:
         EOF
         echo "Docker Compose managed successfully."
 
-    - name: Cleanup SSH keys
+    - name: Cleanup SSH keys on GitHub runner
       run: |
         echo "Cleaning up SSH keys..."
         rm -rf ~/.ssh/id_ed25519
