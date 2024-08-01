@@ -11,8 +11,8 @@ export const siteConfig = {
     },
   ],
   links: {
-    github: "https://github.com/bescka/spreadsheet_uploader",
-    docs: "https://github.com/bescka/spreadsheet_uploader",
+    github: "https://github.com/bescka/spreadsheet_upload_tool",
+    docs: "https://github.com/bescka/spreadsheet_upload_tool",
     login: "/login",
     register: "/register",
     uploader: "/uploader"
