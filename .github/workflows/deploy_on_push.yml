@@ -1,124 +1,47 @@
 name: Deploy on Push
 
-on:
-  push:
-    branches:
+on: 
+  push: 
+    branches: 
       - main
 
-jobs:
-  run_pull:
-    name: Run Pull and Manage Containers
+jobs: 
+  deploy: 
     runs-on: ubuntu-latest
-    env: 
-      AWS_INSTANCE_SG_ID: ${{ secrets.AWS_SG_ID }}
-    steps:
-    - name: configure aws credentials
-      uses: aws-actions/configure-aws-credentials@v3
-      with:
-          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          aws-region: ${{secrets.AWS_REGION}}
-    - name: get runner ip address
-      id: ip
-      uses: haythem/public-ip@v1.3
-    - name: whitelist runner ip address
-      run: |
-        aws ec2 authorize-security-group-ingress \
-          --group-id $AWS_INSTANCE_SG_ID \
-          --protocol tcp \
-          --port 22 \
-          --cidr ${{ steps.ip.outputs.ipv4 }}/32    
 
-    - name: Wait for security group update to propagate
-      run: sleep 30
+    permissions: 
+      id-token: write
+      contents: read
 
+    steps: 
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    - name: Create .ssh directory
-      run: |
-        echo "Creating .ssh directory..."
-        mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
-        echo ".ssh directory created."
-
-    - name: Install SSH keys
-      run: |
-        echo "Installing SSH keys..."
-        mkdir -p ~/.ssh
-        chmod 700 ~/.ssh
-        echo "${{ secrets.EC2_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
-        chmod 600 ~/.ssh/id_ed25519
-        echo "SSH key file created and permissions set."
-        
-        echo "Checking DNS resolution for SSH host..."
-        nslookup ${{ secrets.SSH_HOST }}
-        
-        echo "Pinging SSH host..."
-        ping -c 4 ${{ secrets.SSH_HOST }}
-        
-        echo "Running ssh-keyscan with verbose output..."
-        ssh-keyscan -v -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts || { echo "ssh-keyscan failed"; exit 1; }
-        echo "SSH host key added to known_hosts."
-      env:
-        EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
-        SSH_HOST: ${{ secrets.SSH_HOST }}
-
-    - name: Debug List .ssh directory contents
-      run: |
-        echo "Listing ~/.ssh directory contents..."
-        ls -la ~/.ssh
-        echo "Displaying SSH key file contents..."
-        cat ~/.ssh/id_ed25519
-        echo "Done listing ~/.ssh directory contents."
-
-    - name: Test SSH connection
-      run: |
-        echo "Testing SSH connection..."
-        ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "echo 'SSH connection successful'"
-      env:
-        SSH_USER: ${{ secrets.SSH_USER }}
-        SSH_HOST: ${{ secrets.SSH_HOST }}
-
-    - name: Create .ssh directory on remote server
-      run: |
-        echo "Creating .ssh directory on remote server..."
-        ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "mkdir -p ~/.ssh && chmod 700 ~/.ssh"
-        echo ".ssh directory created on remote server."
+    - name: Configure AWS credentials from Github OIDC
+      uses: aws-actions/configure-aws-credentials@v3
+      with: 
+          role-to-assume: ${{secrets.ROLE_TO_ASSUME}}
+          aws-region: ${{secrets.AWS_REGION}}
 
     - name: Pull latest code on remote server
       run: |
-        echo "Pulling latest code from remote repository..."
-        ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull"
-        echo "Code pulled successfully."
+          aws ssm send-command \
+            --instance-ids ${{secrets.AWS_INSTANCE_ID}} \
+            --document-name "AWS-RunShellScript" \
+            --comment "Pull latest code" \
+            --parameters 'commands=cd ${{ secrets.WORK_DIR }} && && git checkout main && git pull' \
+            --timeout-seconds 60 \
 
     - name: Manage Docker Compose on remote server
       run: |
-        echo "Managing Docker Compose on remote server..."
-        ssh -i ~/.ssh/id_ed25519 -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          set -e
-          cd ${{ secrets.WORK_DIR }}
-          echo "Stopping and removing Docker containers..."
-          docker-compose down
-          echo "Removing Docker images..."
-          docker rmi file_uploader-backend:latest || true
-          docker rmi file_uploader-frontend:latest || true
-          echo "Starting Docker containers..."
-          docker-compose up -d
-          echo "Containers started."
-        EOF
-        echo "Docker Compose managed successfully."
-
-    - name: Cleanup SSH keys on GitHub runner
-      run: |
-        echo "Cleaning up SSH keys..."
-        rm -rf ~/.ssh/id_ed25519
-        echo "SSH keys cleaned up."
-
-    - name: revoke runner ip address
-      run: |
-        aws ec2 revoke-security-group-ingress \
-          --group-id $AWS_INSTANCE_SG_ID \
-          --protocol tcp \
-          --port 22 \
-          --cidr ${{ steps.ip.outputs.ipv4 }}/32
+        aws ssm send-command \
+          --instance-ids YOUR_INSTANCE_ID \
+          --document-name "AWS-RunShellScript" \
+          --comment "Manage Docker Compose" \
+          --parameters 'commands=cd ${{ secrets.WORK_DIR }} && \
+                        docker-compose down && \
+                        docker rmi file_uploader-backend:latest || true && \
+                        docker rmi file_uploader-frontend:latest || true && \
+                        docker-compose pull && \
+                        docker-compose up -d' \
+          --timeout-seconds 60 \
