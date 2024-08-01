@@ -1,18 +1,20 @@
-from fastapi.testclient import TestClient
-import pandas as pd
-import pytest
-from app.sql_db.database import Base
-from app.models.user import UserCreate
-from app.models.database import User as db_user
-from sqlalchemy.orm import Session
-from sqlalchemy import create_engine
 from io import BytesIO
 
+import pandas as pd
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+
+from app.api.auth import get_current_active_admin, get_current_active_user, get_user_by_email
 from app.main import app
-from app.api.auth import get_current_active_user, get_current_active_admin, get_user_by_email
-from app.sql_db.crud import create_user, get_db, update_is_active, update_is_admin
-from app.sql_db.file_crud import create_update_table, insert_data
 from app.models import user as api_m
+from app.models.database import User as db_user
+from app.models.file_db import create_file_table_class, update_schema
+from app.models.user import UserCreate
+from app.sql_db.crud import create_user, get_db, update_is_active, update_is_admin
+from app.sql_db.database import Base
+from app.sql_db.file_crud import create_update_table, insert_data
 
 
 @pytest.fixture(scope="session")
@@ -118,6 +120,18 @@ def files_good():
 
 
 @pytest.fixture(scope="function")
+def df_files_good(files_good):
+    df = pd.read_csv(BytesIO(files_good["file"][1].encode()))
+    return df
+
+
+@pytest.fixture(scope="function")
+def file_table_good(df_files_good, db_engine):
+    file_table, msg = create_update_table(df_files_good, db_engine, "file_table")
+    return file_table
+
+
+@pytest.fixture(scope="function")
 def files_good_updated():
     files = {
         "file": (
@@ -126,6 +140,12 @@ def files_good_updated():
         )
     }
     return files
+
+
+@pytest.fixture(scope="function")
+def df_files_good_updated(files_good_updated):
+    df = pd.read_csv(BytesIO(files_good_updated["file"][1].encode()))
+    return df
 
 
 @pytest.fixture(scope="function")
