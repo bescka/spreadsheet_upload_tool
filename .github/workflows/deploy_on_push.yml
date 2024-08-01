@@ -14,13 +14,23 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    - name: Create .ssh directory
+      run: |
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+
     - name: Install SSH keys
       run: |
         echo "Installing SSH keys..."
-        echo "${{ secrets.EC2_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+        echo "${{ secrets.EC2_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
         ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
         echo "SSH keys installed."
+
+    - name: Debug -- List .ssh directory contents
+      run: |
+        echo "Listing ~/.ssh directory contents..."
+        ls -la ~/.ssh
 
     - name: Connect and pull latest code
       run: |
