@@ -29,7 +29,15 @@ jobs:
         echo "${{ secrets.EC2_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_ed25519
         chmod 600 ~/.ssh/id_ed25519
         echo "SSH key file created and permissions set."
-        ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+        
+        echo "Checking DNS resolution for SSH host..."
+        nslookup ${{ secrets.SSH_HOST }}
+        
+        echo "Pinging SSH host..."
+        ping -c 4 ${{ secrets.SSH_HOST }}
+        
+        echo "Running ssh-keyscan with verbose output..."
+        ssh-keyscan -v -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts || { echo "ssh-keyscan failed"; exit 1; }
         echo "SSH host key added to known_hosts."
       env:
         EC2_PRIVATE_KEY: ${{ secrets.EC2_PRIVATE_KEY }}
@@ -39,6 +47,7 @@ jobs:
       run: |
         echo "Listing ~/.ssh directory contents..."
         ls -la ~/.ssh
+        echo "Displaying SSH key file contents..."
         cat ~/.ssh/id_ed25519
         echo "Done listing ~/.ssh directory contents."
 
