@@ -36,7 +36,7 @@ jobs:
     - name: Manage Docker Compose on remote server
       run: |
         aws ssm send-command \
-          --instance-ids ${{secrets.AWS_INSTANCE_ID} \
+          --instance-ids ${{secrets.AWS_INSTANCE_ID}} \
           --document-name "AWS-RunShellScript" \
           --comment "Manage Docker Compose" \
           --parameters 'commands=cd ${{ secrets.WORK_DIR }} && \
