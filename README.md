@@ -4,21 +4,28 @@
 To run: 
 
 # Backend: 
+## .env
+FASTAPI_SECRET_KEY=
+FASTAPI_HASH_ALGORITHM="HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+USER_DB_URL="sqlite:///:memory:"
+FILE_DB_URL="sqlite:///:memory:"
 
-from backend-app: 
-``
 ```
-python -m venv env
-source env/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+cd backend-app
+poetry install
+poetry run uvicorn app.main:app --reload
 ```
-docs available with SwaggerUI at /docs
-requirements in requirements.txt
+to run pytest
+```
+poetry run pytest
+```
+docs available with SwaggerUI at `http://localhost:8000/docs`
 
 # Frontend
-from frontend-app: 
+
 ```
+cd frontend-app
 npm install
 npm run dev
 ```
