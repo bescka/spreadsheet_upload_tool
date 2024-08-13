@@ -16,6 +16,7 @@ cryptography = "^43.0.0"
 python-jose = "^3.3.0"
 pandas = "^2.2.2"
 psycopg2-binary = "^2.9.9"
+bcrypt = "^4.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
