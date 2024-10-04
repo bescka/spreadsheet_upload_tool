@@ -1,12 +1,12 @@
 import pytest
-from unittest.mock import MagicMock
 from sqlalchemy import create_engine
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
-from app.sql_db import crud
+
 from app.models.database import User as db_user
+from app.models.user import UserCreate
+from app.sql_db import crud
 from app.sql_db.database import Base
-from app.models.user import UserCreate, User
 
 
 @pytest.fixture(scope="session")

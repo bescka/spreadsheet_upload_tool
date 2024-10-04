@@ -1,5 +1,3 @@
-from fastapi.testclient import TestClient
-from app.api import users
 from app.sql_db import crud
 
 
