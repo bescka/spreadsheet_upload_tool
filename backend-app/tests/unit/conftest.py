@@ -1,17 +1,18 @@
 from io import BytesIO
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, sessionmaker
 
 from app.api.auth import get_current_active_admin, get_current_active_user, get_user_by_email
 from app.main import app
 from app.models import user as api_m
 from app.models.database import User as db_user
 from app.models.file_db import create_file_table_class, update_schema
-from app.models.user import UserCreate
+from app.models.user import UserCreate, UserInDB
 from app.sql_db.crud import create_user, get_db, update_is_active, update_is_admin
 from app.sql_db.database import Base
 from app.sql_db.file_crud import create_update_table, insert_data
@@ -179,3 +180,37 @@ def files_bad_column():
         )
     }
     return files
+
+
+@pytest.fixture
+def mock_db():
+    """Fixture for mocking the database session."""
+    db = MagicMock(spec=Session)
+    return db
+
+
+@pytest.fixture
+def mock_user():
+    """Fixture for mocking a user."""
+    user = UserInDB(email="user1@example.com", password="test1", hashed_password="test1fake_hash")
+    return user
+
+
+@pytest.fixture
+def mock_get_user_by_email_success(mock_user):
+    """Fixture for mocking get_user_by_email to retuern the mock user."""
+
+    def mock_get_user_by_email(db, email):
+        return mock_user
+
+    return mock_get_user_by_email
+
+
+@pytest.fixture
+def mock_get_user_by_email_none():
+    """Fixture for mocking get_user_by_email to retuern None (user not found)."""
+
+    def mock_get_user_by_email(db, email):
+        return None
+
+    return mock_get_user_by_email
