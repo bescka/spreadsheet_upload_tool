@@ -11,9 +11,9 @@ class UserCreate(UserBase):
     password: str
 
 
-# TODO: Needed?
-# class UserInDB(UserBase):
-#     hashed_password: str
+# only for testing
+class UserInDB(UserCreate):
+    hashed_password: str
 
 
 class User(UserBase):
