@@ -1,9 +1,10 @@
 from io import BytesIO
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
 from fastapi.testclient import TestClient
+from jose import jwt
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -198,19 +199,37 @@ def mock_user():
 
 @pytest.fixture
 def mock_get_user_by_email_success(mock_user):
-    """Fixture for mocking get_user_by_email to retuern the mock user."""
-
-    def mock_get_user_by_email(db, email):
-        return mock_user
-
-    return mock_get_user_by_email
+    """Fixture for mocking get_user_by_email to return the mock user."""
+    mock_function = MagicMock()
+    mock_function.return_value = mock_user
+    return mock_function
 
 
 @pytest.fixture
 def mock_get_user_by_email_none():
     """Fixture for mocking get_user_by_email to retuern None (user not found)."""
 
-    def mock_get_user_by_email(db, email):
-        return None
+    mock_function = MagicMock()
+    mock_function.return_value = None
 
-    return mock_get_user_by_email
+    return mock_function
+
+
+@pytest.fixture
+def valid_token_payload():
+    return {"sub": "user1@example.com"}
+
+
+@pytest.fixture
+def valid_token(valid_token_payload):
+    return jwt.encode(
+        valid_token_payload,
+        "SECRET",
+        algorithm="HS256",  # TODO: secret and "HS256" should be configurable
+    )  # TODO: secret and "HS256" should be configurable
+
+
+@pytest.fixture
+def mock_jwt_decode(valid_token_payload):
+    """Mock jwt.decode to return a valid payload."""
+    return MagicMock(return_value=valid_token_payload)
