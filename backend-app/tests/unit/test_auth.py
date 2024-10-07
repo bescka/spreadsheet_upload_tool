@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from jose import jwt
+from fastapi.exceptions import HTTPException
+from jose import JWTError, jwt
 
 from app.api.auth import authenticate_user, create_access_token, get_current_user
 
@@ -126,5 +127,71 @@ async def test_get_current_user_valid_token(
     assert user.email == mock_user.email
     mock_jwt_decode.assert_called_once_with(valid_token, TEST_SECRET_KEY, algorithms=["HS256"])
     mock_get_user_by_email_success.assert_called_once_with(
-        mock_db, email=mock_user.email
-    )  # WARNING: Is email=mock_user.email correct?
+        mock_db, email=mock_jwt_decode.return_value.get("sub")
+    )
+
+
+@pytest.mark.asyncio
+async def test_get_current_user_missing_email(mock_jwt_decode, valid_token, mock_db, monkeypatch):
+    TEST_SECRET_KEY = "SECRET"
+
+    # Mock jwt.decode to return a payload without "sub" (missing email)
+    mock_jwt_decode.return_value = {}
+
+    monkeypatch.setattr("app.api.auth.jwt.decode", mock_jwt_decode)
+    monkeypatch.setattr("app.api.auth.SECRET_KEY", TEST_SECRET_KEY)
+
+    # Expect the function to raise an HTTPException when email is missing
+    with pytest.raises(HTTPException) as exc_info:
+        await get_current_user(token=valid_token, db=mock_db)
+
+    assert exc_info.value.status_code == 401
+    assert exc_info.value.detail == "Could not validate credentials"
+    mock_jwt_decode.assert_called_once_with(valid_token, TEST_SECRET_KEY, algorithms=["HS256"])
+
+
+@pytest.mark.asyncio
+async def test_get_current_user_jwt_error(mock_jwt_decode, valid_token, mock_db, monkeypatch):
+    TEST_SECRET_KEY = "SECRET"
+
+    # Mock jwt.decode to raise JWTError
+    mock_jwt_decode.side_effect = JWTError
+
+    monkeypatch.setattr("app.api.auth.jwt.decode", mock_jwt_decode)
+    monkeypatch.setattr("app.api.auth.SECRET_KEY", TEST_SECRET_KEY)
+
+    # Expect the function to raise an HTTPException when JWTError occurs
+    with pytest.raises(HTTPException) as exc_info:
+        await get_current_user(token=valid_token, db=mock_db)
+
+    assert exc_info.value.status_code == 401
+    assert exc_info.value.detail == "Could not validate credentials"
+    mock_jwt_decode.assert_called_once_with(valid_token, TEST_SECRET_KEY, algorithms=["HS256"])
+
+
+@pytest.mark.asyncio
+async def test_get_current_user_user_not_found(
+    mock_jwt_decode,
+    valid_token_payload,
+    valid_token,
+    mock_db,
+    mock_get_user_by_email_none,
+    monkeypatch,
+):
+    TEST_SECRET_KEY = "SECRET"
+
+    # Mock jwt.decode to return a valid payload with email
+    mock_jwt_decode.return_value = valid_token_payload
+
+    monkeypatch.setattr("app.api.auth.jwt.decode", mock_jwt_decode)
+    monkeypatch.setattr("app.api.auth.get_user_by_email", mock_get_user_by_email_none)
+    monkeypatch.setattr("app.api.auth.SECRET_KEY", TEST_SECRET_KEY)
+
+    # Expect the function to raise an HTTPException when user is not found
+    with pytest.raises(HTTPException) as exc_info:
+        await get_current_user(token=valid_token, db=mock_db)
+
+    assert exc_info.value.status_code == 401
+    assert exc_info.value.detail == "Could not validate credentials"
+    mock_jwt_decode.assert_called_once_with(valid_token, TEST_SECRET_KEY, algorithms=["HS256"])
+    mock_get_user_by_email_none.assert_called_once_with(mock_db, email=valid_token_payload["sub"])
