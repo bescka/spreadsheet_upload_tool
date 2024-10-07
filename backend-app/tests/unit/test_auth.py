@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from jose import jwt
 
-from app.api.auth import authenticate_user, create_access_token
+from app.api.auth import authenticate_user, create_access_token, get_current_user
 
 
 def test_authenticate_user_success(mock_db, mock_get_user_by_email_success, mock_user, monkeypatch):
@@ -101,3 +101,30 @@ def test_create_access_token_expired_token(mock_user, monkeypatch):
     )
     with pytest.raises(jwt.ExpiredSignatureError):
         jwt.decode(access_token, TEST_SECRET_KEY, algorithms=["HS256"])
+
+
+@pytest.mark.asyncio
+async def test_get_current_user_valid_token(
+    mock_jwt_decode,
+    valid_token,
+    mock_user,
+    mock_db,
+    mock_get_user_by_email_success,
+    monkeypatch,
+):
+    TEST_SECRET_KEY = "SECRET"
+
+    # Mock jwt.decode and get_user_by_email using monkeypatch
+    monkeypatch.setattr("app.api.auth.jwt.decode", mock_jwt_decode)
+    monkeypatch.setattr("app.api.auth.get_user_by_email", mock_get_user_by_email_success)
+    monkeypatch.setattr("app.api.auth.SECRET_KEY", TEST_SECRET_KEY)
+
+    # Call the function
+    user = await get_current_user(token=valid_token, db=mock_db)
+
+    # Assertions
+    assert user.email == mock_user.email
+    mock_jwt_decode.assert_called_once_with(valid_token, TEST_SECRET_KEY, algorithms=["HS256"])
+    mock_get_user_by_email_success.assert_called_once_with(
+        mock_db, email=mock_user.email
+    )  # WARNING: Is email=mock_user.email correct?
