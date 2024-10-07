@@ -1,7 +1,5 @@
 import logging
 
-import pytest
-
 from app.sql_db import file_crud
 
 
