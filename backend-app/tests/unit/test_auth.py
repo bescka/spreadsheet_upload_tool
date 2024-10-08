@@ -4,7 +4,12 @@ import pytest
 from fastapi.exceptions import HTTPException
 from jose import JWTError, jwt
 
-from app.api.auth import authenticate_user, create_access_token, get_current_user
+from app.api.auth import (
+    authenticate_user,
+    create_access_token,
+    get_current_active_user,
+    get_current_user,
+)
 
 
 def test_authenticate_user_success(mock_db, mock_get_user_by_email_success, mock_user, monkeypatch):
@@ -195,3 +200,27 @@ async def test_get_current_user_user_not_found(
     assert exc_info.value.detail == "Could not validate credentials"
     mock_jwt_decode.assert_called_once_with(valid_token, TEST_SECRET_KEY, algorithms=["HS256"])
     mock_get_user_by_email_none.assert_called_once_with(mock_db, email=valid_token_payload["sub"])
+
+
+@pytest.mark.asyncio
+async def test_get_current_active_user_success(
+    mock_user_is_active, mock_get_current_user_active, monkeypatch
+):
+    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_active)
+
+    user = await get_current_active_user(mock_user_is_active)
+
+    assert user.id == mock_user_is_active.id
+
+
+@pytest.mark.asyncio
+async def test_get_current_active_user_not_active(
+    mock_user_is_not_active, mock_get_current_user_not_active, monkeypatch
+):
+    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_not_active)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await get_current_active_user(mock_user_is_not_active)
+
+    assert exc_info.value.status_code == 400
+    assert exc_info.value.detail == "Inactive user"
