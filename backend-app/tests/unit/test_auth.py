@@ -261,3 +261,22 @@ async def test_get_current_admin_not_active_not_admin(
 
     assert exc_info.value.status_code == 400
     assert exc_info.value.detail == "Inactive user"
+
+
+def test_api_helth_check(client):
+    # GET request
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"Status": "Something Different"}
+
+
+def test_health_check_post(client):
+    # POST request to a GET-only route
+    response = client.post("/")
+    assert response.status_code == 405  # Method Not Allowed
+
+
+def test_health_check_wrong_url(client):
+    # Wrong URL
+    response = client.get("/wrong-url")
+    assert response.status_code == 404  # Not Found
