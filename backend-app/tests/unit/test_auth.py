@@ -280,3 +280,36 @@ def test_health_check_wrong_url(client):
     # Wrong URL
     response = client.get("/wrong-url")
     assert response.status_code == 404  # Not Found
+
+
+def test_successful_login(
+    client,
+    mock_authenticate_user,
+    mock_create_access_token_valid_token,
+    valid_token,
+    db,
+    monkeypatch,
+):
+
+    monkeypatch.setattr("app.api.auth.authenticate_user", mock_authenticate_user)
+    monkeypatch.setattr("app.api.auth.create_access_token", mock_create_access_token_valid_token)
+
+    # Prepare the data as if it is coming from OAuth2PasswordRequestForm
+    login_data = {"username": "user1@example.com", "password": "test1fake_hash"}
+
+    # Send a POST request to the /token endpoint
+    response = client.post("/token", data=login_data)
+
+    # Assert that the status code is 200 OK
+    assert response.status_code == 200
+
+    # Assert that the response JSON contains the correct token
+    expected_response = {
+        "access_token": valid_token,
+        "token_type": "bearer",
+        "message": "Welcome!",
+    }
+    assert response.json() == expected_response
+
+    # # Ensure the authenticate_user was called with correct arguments
+    mock_authenticate_user.assert_called_once_with("user1@example.com", "test1fake_hash", db=db)

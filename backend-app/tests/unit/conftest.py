@@ -1,5 +1,5 @@
 from io import BytesIO
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
@@ -319,3 +319,13 @@ def valid_token(valid_token_payload):
 def mock_jwt_decode(valid_token_payload):
     """Mock jwt.decode to return a valid payload."""
     return MagicMock(return_value=valid_token_payload)
+
+
+@pytest.fixture
+def mock_authenticate_user(mock_get_user_by_email_success):
+    return MagicMock(return_value=mock_get_user_by_email_success)
+
+
+@pytest.fixture
+def mock_create_access_token_valid_token(valid_token):
+    return MagicMock(return_value=valid_token)
