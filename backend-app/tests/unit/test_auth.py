@@ -204,23 +204,60 @@ async def test_get_current_user_user_not_found(
 
 @pytest.mark.asyncio
 async def test_get_current_active_user_success(
-    mock_user_is_active, mock_get_current_user_active, monkeypatch
+    mock_user_is_active_not_admin, mock_get_current_user_is_active_not_admin, monkeypatch
 ):
-    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_active)
+    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_is_active_not_admin)
 
-    user = await get_current_active_user(mock_user_is_active)
+    user = await get_current_active_user(mock_user_is_active_not_admin)
 
-    assert user.id == mock_user_is_active.id
+    assert user.id == mock_user_is_active_not_admin.id
 
 
 @pytest.mark.asyncio
 async def test_get_current_active_user_not_active(
-    mock_user_is_not_active, mock_get_current_user_not_active, monkeypatch
+    mock_user_not_active_not_admin, mock_get_current_user_not_active_not_admin, monkeypatch
 ):
-    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_not_active)
+    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_not_active_not_admin)
 
     with pytest.raises(HTTPException) as exc_info:
-        await get_current_active_user(mock_user_is_not_active)
+        await get_current_active_user(mock_user_not_active_not_admin)
+
+    assert exc_info.value.status_code == 400
+    assert exc_info.value.detail == "Inactive user"
+
+
+@pytest.mark.asyncio
+async def test_get_current_active_admin_success(
+    mock_user_is_active_is_admin, mock_get_current_user_is_active_is_admin, monkeypatch
+):
+    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_is_active_is_admin)
+
+    user = await get_current_active_user(mock_user_is_active_is_admin)
+
+    assert user.id == mock_user_is_active_is_admin.id
+
+
+@pytest.mark.asyncio
+async def test_get_current_active_admin_not_active_is_admin(
+    mock_user_not_active_is_admin, mock_get_current_user_not_active_is_admin, monkeypatch
+):
+    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_not_active_is_admin)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await get_current_active_user(mock_user_not_active_is_admin)
+
+    assert exc_info.value.status_code == 400
+    assert exc_info.value.detail == "Inactive user"
+
+
+@pytest.mark.asyncio
+async def test_get_current_admin_not_active_not_admin(
+    mock_user_not_active_not_admin, mock_get_current_user_not_active_not_admin, monkeypatch
+):
+    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_not_active_not_admin)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await get_current_active_user(mock_user_not_active_not_admin)
 
     assert exc_info.value.status_code == 400
     assert exc_info.value.detail == "Inactive user"

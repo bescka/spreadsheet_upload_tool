@@ -198,7 +198,7 @@ def mock_user():
 
 
 @pytest.fixture
-def mock_user_is_active():
+def mock_user_is_active_not_admin():
     """Fixture for mocking a user."""
     user = User(
         id=1,
@@ -211,7 +211,7 @@ def mock_user_is_active():
 
 
 @pytest.fixture
-def mock_user_is_not_active():
+def mock_user_not_active_not_admin():
     """Fixture for mocking a user."""
     user = User(
         id=1,
@@ -238,7 +238,7 @@ def mock_user_is_active_is_admin():
 
 
 @pytest.fixture
-def mock_user_is_not_active_is_admin():
+def mock_user_not_active_is_admin():
     """Fixture for mocking a user."""
     user = User(
         id=1,
@@ -252,32 +252,34 @@ def mock_user_is_not_active_is_admin():
 
 
 @pytest.fixture
-def mock_user_is_not_active_is_not_admin():
-    """Fixture for mocking a user."""
-    user = User(
-        id=1,
-        email="user1@example.com",
-        password="test1",
-        hashed_password="test1fake_hash",
-        is_active=False,
-        is_admin=False,
-    )
-    return user
-
-
-@pytest.fixture
-def mock_get_current_user_active(mock_user_is_active):
+def mock_get_current_user_is_active_not_admin(mock_user_is_active_not_admin):
     """Fixture for mocking get_current_user to return the mock user."""
     mock_function = MagicMock()
-    mock_function.return_value = mock_user_is_active
+    mock_function.return_value = mock_user_is_active_not_admin
     return mock_function
 
 
 @pytest.fixture
-def mock_get_current_user_not_active(mock_user_is_not_active):
+def mock_get_current_user_not_active_not_admin(mock_user_not_active_not_admin):
     """Fixture for mocking get_current_user to return the mock user."""
     mock_function = MagicMock()
-    mock_function.return_value = mock_user_is_not_active
+    mock_function.return_value = mock_user_not_active_not_admin
+    return mock_function
+
+
+@pytest.fixture
+def mock_get_current_user_is_active_is_admin(mock_user_is_active_is_admin):
+    """Fixture for mocking get_current_user to return the mock user."""
+    mock_function = MagicMock()
+    mock_function.return_value = mock_user_is_active_is_admin
+    return mock_function
+
+
+@pytest.fixture
+def mock_get_current_user_not_active_is_admin(mock_user_not_active_is_admin):
+    """Fixture for mocking get_current_user to return the mock user."""
+    mock_function = MagicMock()
+    mock_function.return_value = mock_user_not_active_is_admin
     return mock_function
 
 
