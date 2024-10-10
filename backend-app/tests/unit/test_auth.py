@@ -4,7 +4,12 @@ import pytest
 from fastapi.exceptions import HTTPException
 from jose import JWTError, jwt
 
-from app.api.auth import authenticate_user, create_access_token, get_current_user
+from app.api.auth import (
+    authenticate_user,
+    create_access_token,
+    get_current_active_user,
+    get_current_user,
+)
 
 
 def test_authenticate_user_success(mock_db, mock_get_user_by_email_success, mock_user, monkeypatch):
@@ -195,3 +200,116 @@ async def test_get_current_user_user_not_found(
     assert exc_info.value.detail == "Could not validate credentials"
     mock_jwt_decode.assert_called_once_with(valid_token, TEST_SECRET_KEY, algorithms=["HS256"])
     mock_get_user_by_email_none.assert_called_once_with(mock_db, email=valid_token_payload["sub"])
+
+
+@pytest.mark.asyncio
+async def test_get_current_active_user_success(
+    mock_user_is_active_not_admin, mock_get_current_user_is_active_not_admin, monkeypatch
+):
+    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_is_active_not_admin)
+
+    user = await get_current_active_user(mock_user_is_active_not_admin)
+
+    assert user.id == mock_user_is_active_not_admin.id
+
+
+@pytest.mark.asyncio
+async def test_get_current_active_user_not_active(
+    mock_user_not_active_not_admin, mock_get_current_user_not_active_not_admin, monkeypatch
+):
+    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_not_active_not_admin)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await get_current_active_user(mock_user_not_active_not_admin)
+
+    assert exc_info.value.status_code == 400
+    assert exc_info.value.detail == "Inactive user"
+
+
+@pytest.mark.asyncio
+async def test_get_current_active_admin_success(
+    mock_user_is_active_is_admin, mock_get_current_user_is_active_is_admin, monkeypatch
+):
+    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_is_active_is_admin)
+
+    user = await get_current_active_user(mock_user_is_active_is_admin)
+
+    assert user.id == mock_user_is_active_is_admin.id
+
+
+@pytest.mark.asyncio
+async def test_get_current_active_admin_not_active_is_admin(
+    mock_user_not_active_is_admin, mock_get_current_user_not_active_is_admin, monkeypatch
+):
+    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_not_active_is_admin)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await get_current_active_user(mock_user_not_active_is_admin)
+
+    assert exc_info.value.status_code == 400
+    assert exc_info.value.detail == "Inactive user"
+
+
+@pytest.mark.asyncio
+async def test_get_current_admin_not_active_not_admin(
+    mock_user_not_active_not_admin, mock_get_current_user_not_active_not_admin, monkeypatch
+):
+    monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_not_active_not_admin)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await get_current_active_user(mock_user_not_active_not_admin)
+
+    assert exc_info.value.status_code == 400
+    assert exc_info.value.detail == "Inactive user"
+
+
+def test_api_helth_check(client):
+    # GET request
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {"Status": "Something Different"}
+
+
+def test_health_check_post(client):
+    # POST request to a GET-only route
+    response = client.post("/")
+    assert response.status_code == 405  # Method Not Allowed
+
+
+def test_health_check_wrong_url(client):
+    # Wrong URL
+    response = client.get("/wrong-url")
+    assert response.status_code == 404  # Not Found
+
+
+def test_successful_login(
+    client,
+    mock_authenticate_user,
+    mock_create_access_token_valid_token,
+    valid_token,
+    db,
+    monkeypatch,
+):
+
+    monkeypatch.setattr("app.api.auth.authenticate_user", mock_authenticate_user)
+    monkeypatch.setattr("app.api.auth.create_access_token", mock_create_access_token_valid_token)
+
+    # Prepare the data as if it is coming from OAuth2PasswordRequestForm
+    login_data = {"username": "user1@example.com", "password": "test1fake_hash"}
+
+    # Send a POST request to the /token endpoint
+    response = client.post("/token", data=login_data)
+
+    # Assert that the status code is 200 OK
+    assert response.status_code == 200
+
+    # Assert that the response JSON contains the correct token
+    expected_response = {
+        "access_token": valid_token,
+        "token_type": "bearer",
+        "message": "Welcome!",
+    }
+    assert response.json() == expected_response
+
+    # # Ensure the authenticate_user was called with correct arguments
+    mock_authenticate_user.assert_called_once_with("user1@example.com", "test1fake_hash", db=db)

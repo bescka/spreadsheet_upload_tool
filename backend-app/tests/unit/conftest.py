@@ -1,5 +1,5 @@
 from io import BytesIO
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
@@ -13,7 +13,7 @@ from app.main import app
 from app.models import user as api_m
 from app.models.database import User as db_user
 from app.models.file_db import create_file_table_class, update_schema
-from app.models.user import UserCreate, UserInDB
+from app.models.user import User, UserCreate, UserInDB
 from app.sql_db.crud import create_user, get_db, update_is_active, update_is_admin
 from app.sql_db.database import Base
 from app.sql_db.file_crud import create_update_table, insert_data
@@ -198,6 +198,92 @@ def mock_user():
 
 
 @pytest.fixture
+def mock_user_is_active_not_admin():
+    """Fixture for mocking a user."""
+    user = User(
+        id=1,
+        email="user1@example.com",
+        password="test1",
+        hashed_password="test1fake_hash",
+        is_active=True,
+    )
+    return user
+
+
+@pytest.fixture
+def mock_user_not_active_not_admin():
+    """Fixture for mocking a user."""
+    user = User(
+        id=1,
+        email="user1@example.com",
+        password="test1",
+        hashed_password="test1fake_hash",
+        is_active=False,
+    )
+    return user
+
+
+@pytest.fixture
+def mock_user_is_active_is_admin():
+    """Fixture for mocking a user."""
+    user = User(
+        id=1,
+        email="user1@example.com",
+        password="test1",
+        hashed_password="test1fake_hash",
+        is_active=True,
+        is_admin=True,
+    )
+    return user
+
+
+@pytest.fixture
+def mock_user_not_active_is_admin():
+    """Fixture for mocking a user."""
+    user = User(
+        id=1,
+        email="user1@example.com",
+        password="test1",
+        hashed_password="test1fake_hash",
+        is_active=False,
+        is_admin=True,
+    )
+    return user
+
+
+@pytest.fixture
+def mock_get_current_user_is_active_not_admin(mock_user_is_active_not_admin):
+    """Fixture for mocking get_current_user to return the mock user."""
+    mock_function = MagicMock()
+    mock_function.return_value = mock_user_is_active_not_admin
+    return mock_function
+
+
+@pytest.fixture
+def mock_get_current_user_not_active_not_admin(mock_user_not_active_not_admin):
+    """Fixture for mocking get_current_user to return the mock user."""
+    mock_function = MagicMock()
+    mock_function.return_value = mock_user_not_active_not_admin
+    return mock_function
+
+
+@pytest.fixture
+def mock_get_current_user_is_active_is_admin(mock_user_is_active_is_admin):
+    """Fixture for mocking get_current_user to return the mock user."""
+    mock_function = MagicMock()
+    mock_function.return_value = mock_user_is_active_is_admin
+    return mock_function
+
+
+@pytest.fixture
+def mock_get_current_user_not_active_is_admin(mock_user_not_active_is_admin):
+    """Fixture for mocking get_current_user to return the mock user."""
+    mock_function = MagicMock()
+    mock_function.return_value = mock_user_not_active_is_admin
+    return mock_function
+
+
+@pytest.fixture
 def mock_get_user_by_email_success(mock_user):
     """Fixture for mocking get_user_by_email to return the mock user."""
     mock_function = MagicMock()
@@ -233,3 +319,13 @@ def valid_token(valid_token_payload):
 def mock_jwt_decode(valid_token_payload):
     """Mock jwt.decode to return a valid payload."""
     return MagicMock(return_value=valid_token_payload)
+
+
+@pytest.fixture
+def mock_authenticate_user(mock_get_user_by_email_success):
+    return MagicMock(return_value=mock_get_user_by_email_success)
+
+
+@pytest.fixture
+def mock_create_access_token_valid_token(valid_token):
+    return MagicMock(return_value=valid_token)
