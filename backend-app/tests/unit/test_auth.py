@@ -283,7 +283,7 @@ def test_health_check_wrong_url(client):
     assert response.status_code == 404  # Not Found
 
 
-def test_successful_login(
+def test_login_for_access_token_success(
     client,
     mock_authenticate_user,
     mock_create_access_token_valid_token,
@@ -314,3 +314,33 @@ def test_successful_login(
 
     # # Ensure the authenticate_user was called with correct arguments
     mock_authenticate_user.assert_called_once_with("user1@example.com", "test1fake_hash", db=db)
+
+
+def test__login_for_access_token_fails(
+    client,
+    mock_authenticate_user,
+    mock_create_access_token_valid_token,
+    valid_token,
+    db,
+    monkeypatch,
+):
+
+    # Mock authenticate_user to return False
+    mock_authenticate_user.return_value = False
+
+    monkeypatch.setattr("app.api.auth.authenticate_user", mock_authenticate_user)
+    monkeypatch.setattr("app.api.auth.create_access_token", mock_create_access_token_valid_token)
+
+    # Prepare the data as if it is coming from OAuth2PasswordRequestForm
+    login_data = {"username": "user1@example.com", "password": "testfake_hash"}
+
+    # Send a POST request to the /token endpoint
+    response = client.post("/token", data=login_data)
+
+    # Assert that the status code is 200 OK
+    assert response.status_code == 400
+
+    assert response.json().get("detail") == "Incorrect username or password"
+
+    # # Ensure the authenticate_user was called with correct arguments
+    mock_authenticate_user.assert_called_once_with("user1@example.com", "testfake_hash", db=db)
