@@ -7,6 +7,7 @@ from jose import JWTError, jwt
 from app.api.auth import (
     authenticate_user,
     create_access_token,
+    get_current_active_admin,
     get_current_active_user,
     get_current_user,
 )
@@ -232,7 +233,7 @@ async def test_get_current_active_admin_success(
 ):
     monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_is_active_is_admin)
 
-    user = await get_current_active_user(mock_user_is_active_is_admin)
+    user = await get_current_active_admin(mock_user_is_active_is_admin)
 
     assert user.id == mock_user_is_active_is_admin.id
 
@@ -244,23 +245,23 @@ async def test_get_current_active_admin_not_active_is_admin(
     monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_not_active_is_admin)
 
     with pytest.raises(HTTPException) as exc_info:
-        await get_current_active_user(mock_user_not_active_is_admin)
+        await get_current_active_admin(mock_user_not_active_is_admin)
 
     assert exc_info.value.status_code == 400
-    assert exc_info.value.detail == "Inactive user"
+    assert exc_info.value.detail == "Not Authorized!"
 
 
 @pytest.mark.asyncio
-async def test_get_current_admin_not_active_not_admin(
+async def test_get_current_active_admin_not_active_not_admin(
     mock_user_not_active_not_admin, mock_get_current_user_not_active_not_admin, monkeypatch
 ):
     monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_not_active_not_admin)
 
     with pytest.raises(HTTPException) as exc_info:
-        await get_current_active_user(mock_user_not_active_not_admin)
+        await get_current_active_admin(mock_user_not_active_not_admin)
 
     assert exc_info.value.status_code == 400
-    assert exc_info.value.detail == "Inactive user"
+    assert exc_info.value.detail == "Not Authorized!"
 
 
 def test_api_helth_check(client):
