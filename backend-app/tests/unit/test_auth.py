@@ -7,6 +7,7 @@ from jose import JWTError, jwt
 from app.api.auth import (
     authenticate_user,
     create_access_token,
+    get_current_active_admin,
     get_current_active_user,
     get_current_user,
 )
@@ -232,7 +233,7 @@ async def test_get_current_active_admin_success(
 ):
     monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_is_active_is_admin)
 
-    user = await get_current_active_user(mock_user_is_active_is_admin)
+    user = await get_current_active_admin(mock_user_is_active_is_admin)
 
     assert user.id == mock_user_is_active_is_admin.id
 
@@ -244,23 +245,23 @@ async def test_get_current_active_admin_not_active_is_admin(
     monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_not_active_is_admin)
 
     with pytest.raises(HTTPException) as exc_info:
-        await get_current_active_user(mock_user_not_active_is_admin)
+        await get_current_active_admin(mock_user_not_active_is_admin)
 
     assert exc_info.value.status_code == 400
-    assert exc_info.value.detail == "Inactive user"
+    assert exc_info.value.detail == "Not Authorized!"
 
 
 @pytest.mark.asyncio
-async def test_get_current_admin_not_active_not_admin(
+async def test_get_current_active_admin_not_active_not_admin(
     mock_user_not_active_not_admin, mock_get_current_user_not_active_not_admin, monkeypatch
 ):
     monkeypatch.setattr("app.api.auth.get_current_user", mock_get_current_user_not_active_not_admin)
 
     with pytest.raises(HTTPException) as exc_info:
-        await get_current_active_user(mock_user_not_active_not_admin)
+        await get_current_active_admin(mock_user_not_active_not_admin)
 
     assert exc_info.value.status_code == 400
-    assert exc_info.value.detail == "Inactive user"
+    assert exc_info.value.detail == "Not Authorized!"
 
 
 def test_api_helth_check(client):
@@ -282,7 +283,7 @@ def test_health_check_wrong_url(client):
     assert response.status_code == 404  # Not Found
 
 
-def test_successful_login(
+def test_login_for_access_token_success(
     client,
     mock_authenticate_user,
     mock_create_access_token_valid_token,
@@ -313,3 +314,33 @@ def test_successful_login(
 
     # # Ensure the authenticate_user was called with correct arguments
     mock_authenticate_user.assert_called_once_with("user1@example.com", "test1fake_hash", db=db)
+
+
+def test__login_for_access_token_fails(
+    client,
+    mock_authenticate_user,
+    mock_create_access_token_valid_token,
+    valid_token,
+    db,
+    monkeypatch,
+):
+
+    # Mock authenticate_user to return False
+    mock_authenticate_user.return_value = False
+
+    monkeypatch.setattr("app.api.auth.authenticate_user", mock_authenticate_user)
+    monkeypatch.setattr("app.api.auth.create_access_token", mock_create_access_token_valid_token)
+
+    # Prepare the data as if it is coming from OAuth2PasswordRequestForm
+    login_data = {"username": "user1@example.com", "password": "testfake_hash"}
+
+    # Send a POST request to the /token endpoint
+    response = client.post("/token", data=login_data)
+
+    # Assert that the status code is 200 OK
+    assert response.status_code == 400
+
+    assert response.json().get("detail") == "Incorrect username or password"
+
+    # # Ensure the authenticate_user was called with correct arguments
+    mock_authenticate_user.assert_called_once_with("user1@example.com", "testfake_hash", db=db)
